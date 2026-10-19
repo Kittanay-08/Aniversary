@@ -195,24 +195,22 @@
         msgEl.style.cssText = `
           position:absolute; inset:0; display:flex; flex-direction:column;
           align-items:center; justify-content:center; gap:4px;
-          background:rgba(0,0,0,0.35); pointer-events:none;
+          background:rgba(0,0,0,0.38); pointer-events:none;
           transition: opacity 1.2s ease; opacity:1; z-index:10;
         `;
         msgEl.innerHTML = `
-          <span style="font-family:'Press Start 2P',monospace; font-size:clamp(11px,4vw,18px);
-            color:#fff0f8; text-shadow: 0 0 8px #ff1493, 2px 2px 0 #b3006e;
-            letter-spacing:2px; line-height:1.6;">HAPPY</span>
-          <span style="font-family:'Press Start 2P',monospace; font-size:clamp(11px,4vw,18px);
-            color:#ff9ec4; text-shadow: 0 0 8px #ff1493, 2px 2px 0 #b3006e;
-            letter-spacing:2px; line-height:1.6;">BIRTHDAY</span>
+          <span style="font-family:'Anuphan', sans-serif; font-weight:800; font-size:clamp(16px,5vw,22px);
+            color:#fff0f8; text-shadow: 0 0 10px #ff1493, 2px 2px 0 #b3006e;
+            letter-spacing:1px; line-height:1.4; text-align:center;">ดีใจที่ได้เจอหนู 💕</span>
         `;
         container.appendChild(msgEl);
 
         // fade out หลัง 1.8s
         setTimeout(() => { msgEl.style.opacity = '0'; }, 1800);
         setTimeout(() => { msgEl.remove(); }, 3100);
-        document.getElementById('puzzleStatus').innerHTML = '';
+        document.getElementById('puzzleStatus').innerHTML = '💖 ดีใจที่ได้เจอหนูนะคะ ✨';
         document.getElementById('puzzleStatus').style.color = '#ff1493';
+        playKissSound();
         triggerConfetti && triggerConfetti();
       }
     }
@@ -360,7 +358,7 @@ const bsodExtraLogs = [
   "> ALLOCATING_HAPPINESS_BUFFER: 0x00FF1493 -> 0xFFFFFFFF",
   "> WARNING: HEARTBEAT_FREQUENCY_EXCEEDED_LIMIT!",
   "> INSTALLING_UNLIMITED_SMILES_PACKAGE ... 100%",
-  "> EXECUTING: HAPPY_BIRTHDAY_MY_LOVE.EXE 💖"
+  "> EXECUTING: HAPPY_Aniversary_MY_LOVE.EXE 💖"
 ];
 
 function adjustChaosScale() {
