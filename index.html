@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Happy Aniversary 1Y 1M 💾</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;600;700&family=VT323&family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&family=MS+Gothic&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- พื้นหลังอนิเมชันลอยวิ้งๆ สำหรับหน้า Desktop -->
+  <div id="desktop-ambient-bg" class="ambient-bg-layer"></div>
+
+  <!-- 1. SCENE 1: จอคอมเรโทร + แถบโหลด COMING SOON -->
+  <div id="pc-world" onclick="startLoadingBlocks()">
+    <div id="pc-ambient-bg" class="ambient-bg-layer"></div>
+    <div class="pc-setup">
+      <div class="monitor-case">
+        <div class="crt-screen">
+          <div class="loading-window-box">
+            <div class="alert-tri tri-top">!</div>
+            <div class="alert-tri tri-left">!</div>
+            <div class="alert-tri tri-right">!</div>
+            <div class="alert-tri tri-bottom">!</div>
+
+            <div class="loading-title-bar">
+              <div class="retro-ctrl-box">_</div>
+              <div class="retro-ctrl-box">□</div>
+              <div class="retro-ctrl-box">✕</div>
+            </div>
+
+            <div class="loading-inner-content">
+              <div class="loading-label" id="load-text"> GIFT COMING SOON.</div>
+              <div class="progress-blocks-frame" id="blocks-container">
+                <div class="p-block"></div><div class="p-block"></div><div class="p-block"></div>
+                <div class="p-block"></div><div class="p-block"></div><div class="p-block"></div>
+                <div class="p-block"></div><div class="p-block"></div><div class="p-block"></div>
+                <div class="p-block"></div><div class="p-block"></div><div class="p-block"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="monitor-buttons">
+          <div class="dots-group">
+            <div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div>
+          </div>
+          <div class="power-switch"></div>
+        </div>
+      </div>
+
+      <div class="monitor-neck"></div>
+
+      <div class="pc-base">
+        <div class="floppy-drive">
+          <div class="brand-logo">Aniversary★</div>
+          <div class="slot-detail">
+            <div class="drive-slot"></div>
+            <div class="eject-btn"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SCENE 2: ERROR CHAOS -->
+  <div id="error-chaos-overlay">
+    <div class="bsod-scanlines"></div>
+    <div id="bsod-ambient-bg" class="ambient-bg-layer"></div>
+    <div class="bsod-bg-code" id="bsod-bg-code">
+      A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36.<br>
+      The current application will be terminated.<br><br>
+      * Press any key to terminate the current application.<br>
+      * Press CTRL+ALT+DEL again to restart your computer. You will lose any unsaved information in all applications.<br><br>
+      *** CUTE_OVERFLOW_EXCEPTION ***<br>
+      Memory Dump: 0x000F774614A 0x00000000 0xF774614A 0x00000000
+      <div id="bsod-stream-log" class="bsod-stream-log"></div>
+      <span class="bsod-cursor">█</span>
+    </div>
+
+    <div class="chaos-canvas" id="chaos-canvas">
+      <div class="c-win w-feelings" style="z-index: 10; --float-dur: 3.4s; --float-delay: 0s;">
+        <div class="c-win-header"><span>HEART</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 8px; font-size: 9px; color: #ff1493;">
+          <b>Feelings connected</b><br><br>
+          Please choose an option:<br><br>
+          <span class="anim-pulse-inline">💖</span> LOVE<br>
+          <span class="anim-pulse-inline" style="animation-delay: 0.4s;">💖</span> OBSESSION<br><br>
+          <label><input type="checkbox" checked> Never leave</label>
+        </div>
+      </div>
+
+      <div class="c-win w-attention" style="z-index: 12; --float-dur: 2.9s; --float-delay: 0.3s;">
+        <div class="c-win-header"><span>Message</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 10px; display: flex; align-items: center; gap: 6px;">
+          <span class="anim-heartbeat" style="font-size: 20px;">💖</span>
+          <span style="font-size: 10px; font-weight: bold; color: #4a0025;">I need a lot of Attention</span>
+        </div>
+        <div style="text-align: right; padding: 0 6px 6px;"><button class="mini-sub-btn">ok</button></div>
+      </div>
+
+      <div class="c-win w-uhoh" style="z-index: 11; --float-dur: 3.7s; --float-delay: 0.6s;">
+        <div class="c-win-header"><span>Uh Oh</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; font-size: 9px; text-align: center;">
+          <div class="anim-wobble" style="font-size: 16px;">🔩</div>
+          <b>You're cute.</b>
+          <div style="margin-top: 4px;"><button class="mini-sub-btn">Damn</button></div>
+        </div>
+      </div>
+
+      <div class="c-win w-bug" style="z-index: 13; --float-dur: 3.1s; --float-delay: 0.2s;">
+        <div class="c-win-header"><span>Bug found</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; font-size: 8px; display: flex; gap: 6px; align-items: center;">
+          <span class="anim-flutter" style="font-size: 16px;">🦋</span>
+          <span>Windows found a bug. It's a cute butterfly.</span>
+        </div>
+      </div>
+
+      <div class="c-win w-screaming" style="z-index: 15; --float-dur: 2.7s; --float-delay: 0.5s;">
+        <div class="c-win-header"><span>AAAAAAAAAAAAAAAAAA...</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; font-size: 8px; display: flex; gap: 4px; align-items: center;">
+          <span class="anim-shake" style="font-size: 16px;">❌</span>
+          <span>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA?</span>
+        </div>
+        <div style="text-align: center; padding-bottom: 4px;"><button class="mini-sub-btn">AAA</button></div>
+      </div>
+
+      <div class="c-win w-monday" style="z-index: 9; --float-dur: 3.8s; --float-delay: 0.4s;">
+        <div class="c-win-header"><span><span class="anim-wobble">🪐</span> Monday</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; display: flex; flex-direction: column; gap: 4px;">
+          <button class="mini-sub-btn">eat</button>
+          <button class="mini-sub-btn">sleep</button>
+          <button class="mini-sub-btn">celebrate</button>
+        </div>
+      </div>
+
+      <div class="c-win w-happiness" style="z-index: 14; --float-dur: 3.3s; --float-delay: 0.7s;">
+        <div class="c-win-header"><span>💔 Error</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; font-size: 8px; color: #ff0055;">
+          The file sadness.exe cannot be found.<br>Only Love is installed.
+        </div>
+      </div>
+
+      <div class="c-win w-loveme" style="z-index: 20; --float-dur: 2.8s; --float-delay: 0.15s;">
+        <div class="c-win-header"><span>(!) MESSAGE</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; font-size: 8px; text-align: center;">
+          <span class="anim-pulse-inline">💖</span> Do you love me?<br><br>
+          <div style="display: flex; gap: 2px; justify-content: center;">
+            <button class="mini-sub-btn" onclick="playClickSound()">yes</button>
+            <button class="mini-sub-btn" onclick="playClickSound()">yes</button>
+            <button class="mini-sub-btn" onclick="playClickSound()">yes</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="c-win w-money" style="z-index: 16; --float-dur: 3.5s; --float-delay: 0.45s;">
+        <div class="c-win-header"><span>(!) MESSAGE</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; font-size: 8px; color: #333;">
+          <b>Where did all your money go?</b>
+          <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <button class="mini-sub-btn" style="flex:1;">boba</button>
+            <button class="mini-sub-btn" style="flex:1;">gifts</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="c-win w-fallinlove" style="z-index: 17; --float-dur: 3.2s; --float-delay: 0.25s;">
+        <div class="c-win-header"><span>💚</span><div class="c-win-btn">✕</div></div>
+        <div style="padding: 6px; text-align: center;">
+          <div style="font-family: 'Press Start 2P', monospace; font-size: 7px; color: #ff1493; margin-bottom: 4px;">FALL IN LOVE?</div>
+          <div style="background: #eee; height: 8px; border: 1px solid #ff9ec4; border-radius: 2px; overflow: hidden; margin-bottom: 4px;">
+            <div class="love-progress-fill"></div>
+          </div>
+          <div style="display: flex; gap: 4px; justify-content: center;">
+            <button class="mini-sub-btn">YES</button>
+            <button class="mini-sub-btn">OKAY!</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-center-bar">
+        <button class="shutup-btn" onclick="finishErrorAndEnter()">Happy Aniversary</button>
+        <div style="display: flex; gap: 6px; width: 100%; justify-content: center;">
+          <button class="mini-sub-btn" style="flex:1;">This</button>
+          <button class="mini-sub-btn" style="flex:1;">you & Me</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SCENE 3: MAIN DESKTOP -->
+  <div class="desktop-container">
+    
+    <!-- ฝั่งซ้าย: ไอคอน Pixel Art -->
+    <div class="desktop-sidebar">
+      <div class="desktop-icon" onclick="openWindow('win-letter')">
+        <div class="pixel-svg-box">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M2 6H12L15 9H30V27H2V6Z" fill="#ffccd8" stroke="#8a5375" stroke-width="2"/>
+            <rect x="5" y="11" width="22" height="13" fill="#ffffff" fill-opacity="0.6"/>
+            <rect x="8" y="14" width="2" height="2" fill="#ff85aa"/>
+            <rect x="22" y="16" width="2" height="2" fill="#ff85aa"/>
+          </svg>
+        </div>
+        <div class="icon-label">Letter.txt</div>
+      </div>
+
+      <div class="desktop-icon" onclick="openWindow('win-youtube')">
+        <div class="pixel-svg-box">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M4 4H24L28 8V28H4V4Z" fill="#ffd5e2" stroke="#8a5375" stroke-width="2"/>
+            <rect x="8" y="6" width="12" height="7" fill="#ffffff" stroke="#8a5375" stroke-width="1.5"/>
+            <rect x="15" y="7" width="3" height="5" fill="#8a5375"/>
+          </svg>
+        </div>
+        <div class="icon-label">video.mp4</div>
+      </div>
+
+      <div class="desktop-icon" onclick="openWindow('win-gallery')">
+        <div class="pixel-svg-box">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="3" y="9" width="26" height="18" rx="2" fill="#ffd5e2" stroke="#8a5375" stroke-width="2"/>
+            <circle cx="16" cy="18" r="6" fill="#ffffff" stroke="#8a5375" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="icon-label">Gallery.bmp</div>
+      </div>
+
+      <div class="desktop-icon" onclick="openWindow('win-cake')">
+        <div class="pixel-svg-box">
+          <svg viewBox="0 0 32 32" fill="none">
+            <!-- ดอกไม้ด้านบนช่อ -->
+            <circle cx="11" cy="9" r="3.5" fill="#ff85aa" stroke="#8a5375" stroke-width="1.5"/>
+            <circle cx="21" cy="9" r="3.5" fill="#ffb8d1" stroke="#8a5375" stroke-width="1.5"/>
+            <circle cx="16" cy="7" r="4" fill="#ff4d88" stroke="#8a5375" stroke-width="1.5"/>
+            <circle cx="11" cy="9" r="1.2" fill="#ffee55"/>
+            <circle cx="21" cy="9" r="1.2" fill="#ffee55"/>
+            <circle cx="16" cy="7" r="1.4" fill="#ffee55"/>
+            <!-- กระดาษห่อช่อดอกไม้ -->
+            <path d="M6 12L11 26H21L26 12H6Z" fill="#ffd5e2" stroke="#8a5375" stroke-width="2"/>
+            <!-- โบว์หัวใจตรงกลางช่อ -->
+            <path d="M13 17C13 16 14 15 15 16L16 17L17 16C18 15 19 16 19 17C19 18.5 16 21 16 21C16 21 13 18.5 13 17Z" fill="#ff1493"/>
+          </svg>
+        </div>
+        <div class="icon-label">Bouquet</div>
+      </div>
+
+      <div class="desktop-icon" onclick="openWindow('win-fortune')">
+        <div class="pixel-svg-box">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="9" width="24" height="14" rx="4" fill="#ffd5e2" stroke="#8a5375" stroke-width="2"/>
+            <circle cx="22" cy="14" r="1.5" fill="#ff85aa"/>
+          </svg>
+        </div>
+        <div class="icon-label">Game.exe</div>
+      </div>
+
+
+      <div class="desktop-icon" onclick="triggerCuteVirus()">
+        <div class="pixel-svg-box">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect x="3" y="5" width="26" height="22" fill="#ffd5e2" stroke="#8a5375" stroke-width="2"/>
+            <path d="M16 14L22 24H10L16 14Z" fill="#ffffff" stroke="#8a5375" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="icon-label">DO_NOT_CLICK</div>
+      </div>
+    </div>
+
+    <!-- พื้นที่ทำงานตรงกลาง -->
+    <div class="desktop-workspace">
+      
+      <!-- คอลัมน์ซ้าย: CD Player & Help Topics Gallery -->
+      <div class="desktop-left-widgets">
+        <!-- 1. CD PLAYER -->
+        <div class="cd-player-widget window">
+          <div class="window-header">
+            <span>💿 CD Player</span>
+            <div class="win-btn-control">✕</div>
+          </div>
+          <div class="cd-layout">
+            <div class="cd-album-art" style="padding:0; overflow:hidden; border-radius:4px;">
+              <img id="cd-cover-img" src="🤌🏻.jpg" style="width:100%; height:100%; object-fit:cover; display:block;">
+            </div>
+            <div class="cd-info-col">
+              <div class="cd-field-row">
+                <span class="cd-label">Artist:</span>
+                <div class="cd-dropdown"><span id="cd-artist-label">Love u Pimpisut</span></div>
+              </div>
+              <div class="cd-field-row">
+                <span class="cd-label">Track:</span>
+                <select id="cd-track-select" class="cd-select" onchange="selectTrack(this.value)">
+                  <option value="0">01. เรา.mp3</option>
+                  <option value="1">02. รักให้เธอได้รู้.mp3</option>
+                </select>
+              </div>
+              <div class="cd-vol-row">
+                <span class="cd-vol-icon" id="cd-vol-icon" onclick="toggleMuteAudio()" title="เปิด/ปิดเสียง">🔊</span>
+                <button class="cd-vol-btn" onclick="changeVolume(-10)" title="ลดเสียง">−</button>
+                <input type="range" id="cd-volume-slider" class="cd-volume-slider" min="0" max="100" value="60" oninput="setVolume(this.value)">
+                <button class="cd-vol-btn" onclick="changeVolume(10)" title="เพิ่มเสียง">+</button>
+                <span id="cd-vol-text" class="cd-vol-text">60%</span>
+              </div>
+              <div class="cd-controls-row">
+                <button class="cd-ctrl-btn" onclick="prevTrack()" title="เพลงก่อนหน้า">◀◀</button>
+                <button class="cd-ctrl-btn" id="cd-play-btn" onclick="toggleAudio()" style="color: #ff1493;" title="เล่น/หยุดชั่วคราว">▶ ❚❚</button>
+                <button class="cd-ctrl-btn" onclick="nextTrack()" title="เพลงถัดไป">▶▶</button>
+                <button class="cd-ctrl-btn" onclick="stopAudio()" title="หยุดเล่น">■</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. HELP TOPICS PHOTO WIDGET -->
+        <div class="help-photo-widget window">
+          <div class="window-header">
+            <span>Help Topics: Windows Help</span>
+            <div class="win-btn-control">✕</div>
+          </div>
+          <div class="help-tab-bar">
+            <div class="help-tab active">Contents</div>
+            <div class="help-tab">Index</div>
+            <div class="help-tab">Find</div>
+          </div>
+          <div class="help-photo-container" style="padding:0; overflow:hidden; position:relative; height:160px;">
+            <canvas id="puzzleCanvas" style="display:block; width:100%; height:100%;"></canvas>
+          </div>
+          <div style="text-align:center; padding:2px 6px 0; font-size:9px; color:#994c68;" id="puzzleStatus">🧩 ลากชิ้นส่วนมาต่อให้ครบ!</div>
+          <div class="help-btn-row">
+            <button class="help-small-btn" onclick="triggerConfetti()">Display</button>
+            <button class="help-small-btn" onclick="triggerConfetti()">Print...</button>
+            <button class="help-small-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- คอลัมน์ขวา: 🎨 UNTITLED.PNG (Paint App) -->
+      <div class="paint-main-window">
+        <div class="paint-header">
+          <span>วาดๆได้เลยน๊าา.PNG</span>
+          <div style="display: flex; gap: 2px;">
+            <div class="win-btn-control" style="width: 12px; height: 11px; font-size: 6px;">_</div>
+            <div class="win-btn-control" style="width: 12px; height: 11px; font-size: 6px;">□</div>
+            <div class="win-btn-control" style="width: 12px; height: 11px; font-size: 6px;">✕</div>
+          </div>
+        </div>
+
+        <div class="paint-body-layout">
+          <div class="paint-tools-sidebar">
+            <div class="p-tool-btn active" id="tool-pen" onclick="setPaintTool('pen')">
+              <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </div>
+            <div class="p-tool-btn" id="tool-eraser" onclick="setPaintTool('eraser')">
+              <svg viewBox="0 0 24 24"><path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.78-.78 2.05 0 2.83L5.03 20c.37.37.89.59 1.41.59H19c.55 0 1-.45 1-1s-.45-1-1-1h-7.17l8.76-8.76c.78-.78.78-2.05 0-2.83l-5.04-5.04c-.39-.38-.9-.57-1.41-.57z"/></svg>
+            </div>
+            <div class="p-tool-btn" id="tool-line" onclick="setPaintTool('line')">
+              <svg viewBox="0 0 24 24"><path d="M19 3L3 19l2 2L21 5z"/></svg>
+            </div>
+            <div class="p-tool-btn" id="tool-circle" onclick="setPaintTool('circle')">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+            </div>
+            <div class="p-tool-btn" id="tool-heart" onclick="setPaintTool('heart')">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </div>
+            <div class="p-tool-btn" id="tool-star" onclick="setPaintTool('star')">
+              <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+          </div>
+
+          <div class="paint-canvas-container">
+            <canvas id="customPaintCanvas" width="280" height="150"></canvas>
+          </div>
+        </div>
+
+        <div class="paint-bottom-bar">
+          <div class="paint-current-preview">
+            <div class="p-curr-color-box" id="current-color-indicator"></div>
+          </div>
+
+          <div class="paint-palette-grid">
+            <div class="palette-swatch" style="background: #ffffff;" onclick="setPaintColor('#ffffff')"></div>
+            <div class="palette-swatch" style="background: #fff0f5;" onclick="setPaintColor('#fff0f5')"></div>
+            <div class="palette-swatch" style="background: #ffd5e2;" onclick="setPaintColor('#ffd5e2')"></div>
+            <div class="palette-swatch" style="background: #ffaec9;" onclick="setPaintColor('#ffaec9')"></div>
+            <div class="palette-swatch" style="background: #ff85aa;" onclick="setPaintColor('#ff85aa')"></div>
+            <div class="palette-swatch" style="background: #ff1493;" onclick="setPaintColor('#ff1493')"></div>
+            <div class="palette-swatch" style="background: #d48ba2;" onclick="setPaintColor('#d48ba2')"></div>
+            <div class="palette-swatch" style="background: #b3597c;" onclick="setPaintColor('#b3597c')"></div>
+            <div class="palette-swatch" style="background: #fce4a6;" onclick="setPaintColor('#fce4a6')"></div>
+            <div class="palette-swatch" style="background: #ffb88c;" onclick="setPaintColor('#ffb88c')"></div>
+            <div class="palette-swatch" style="background: #c3b1e1;" onclick="setPaintColor('#c3b1e1')"></div>
+            <div class="palette-swatch" style="background: #8195e7;" onclick="setPaintColor('#8195e7')"></div>
+            <div class="palette-swatch" style="background: #aed9e0;" onclick="setPaintColor('#aed9e0')"></div>
+            <div class="palette-swatch" style="background: #d4ffd6;" onclick="setPaintColor('#d4ffd6')"></div>
+            <div class="palette-swatch" style="background: #555555;" onclick="setPaintColor('#555555')"></div>
+            <div class="palette-swatch" style="background: #1a1a1a;" onclick="setPaintColor('#1a1a1a')"></div>
+          </div>
+        </div>
+
+        <div class="paint-action-row">
+          <button class="retro-btn" onclick="clearPaintBoard()">🧹 ล้าง</button>
+          <button class="retro-btn" style="background: #ff85aa; color: #fff;" onclick="savePaintImage()">💾 SAVE PNG</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================= POPUP WINDOWS ================= -->
+
+  <!-- 1. จดหมาย Notepad + Kiss Stamp -->
+  <div class="window floating" id="win-letter" style="width: min(380px, 90vw);">
+    <div class="window-header pink">
+      <div>📝 Notepad - ข้อความถึงหนูคั้บบ.txt</div>
+      <div class="win-btn-control" onclick="closeWindow('win-letter')">✕</div>
+    </div>
+    <div class="window-body" style="padding: 6px;">
+      <div class="notepad-paper">
+        <div id="typewriter-text" style="font-size: 13px; line-height: 1.8; color: #222; min-height: 140px; padding-bottom: 20px;"></div>
+        <div id="kiss-stamp" class="kiss-stamp">💋</div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 4px 2px;">
+        <button class="retro-btn" onclick="replayTypewriter()">🔄 อ่านใหม่</button>
+        <button class="retro-btn" onclick="applyKissStamp()">💋 ประทับตรา จุ๊บ!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. เปิดคลิป 6.mp4 (ปิดเสียง Muted) -->
+  <div class="window floating" id="win-youtube" style="width: min(390px, 94vw);">
+    <div class="window-header">
+      <div>🎬 Windows Media Player - เฉียงเหนือเฟสสสส.mp4</div>
+      <div class="win-btn-control" onclick="closeWindow('win-youtube')">✕</div>
+    </div>
+    <div class="window-body" style="padding: 6px;">
+      <div id="video-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 2px inset var(--win-border-dark); background: #000;">
+        <video id="custom-video-player" muted controls playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+          <source src="Festival.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div id="scanlines-layer" class="crt-scanlines"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+        <button class="retro-btn" onclick="toggleScanlines()">📺 CRT Scanlines</button>
+        <button class="retro-btn" onclick="tuneAntenna()">📡 จูนเสาอากาศ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. แกลเลอรีรูปถ่าย (โหลดไฟล์ 1.jpg ถึง 10.jpg) -->
+  <div class="window floating" id="win-gallery" style="width: min(340px, 90vw);">
+    <div class="window-header pink">
+      <div>🖼️ Photo Viewer - Memories (<span id="gallery-counter">1/10</span>)</div>
+      <div class="win-btn-control" onclick="closeWindow('win-gallery')">✕</div>
+    </div>
+    <div class="window-body" style="text-align: center;">
+      <div class="polaroid-frame">
+        <div id="polaroid-box" class="polaroid-img-box">
+          <img id="gallery-img-tag" src="กินข้าวครั้งแรก.jpg" alt="Memory Photo" onerror="this.style.display='none'; document.getElementById('gallery-emoji-fallback').style.display='block';">
+          <video id="gallery-video-tag" controls playsinline loop style="width: 100%; height: 100%; object-fit: cover; display: none; background: #000;" onerror="this.style.display='none'; document.getElementById('gallery-emoji-fallback').style.display='block';"></video>
+          <div id="gallery-emoji-fallback" style="font-size: 48px; display: none;">🌸🐱💕</div>
+          <div id="photo-sticker" style="position: absolute; font-size: 28px; display: none; z-index: 5;"></div>
+        </div>
+        <div id="gallery-caption" style="font-size: 11px; color: #ff1493; font-weight: bold; margin-top: 10px;">รูปที่ 1: ไปกินข้าวด้วยกันครั้งแรกก</div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+        <button class="retro-btn" onclick="prevPhoto()">◀</button>
+        <button class="retro-btn" onclick="shakePolaroid()">📷 เขย่ารูป</button>
+        <button class="retro-btn" onclick="addSticker()">✨ แปะสติกเกอร์</button>
+        <button class="retro-btn" onclick="nextPhoto()">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ช่อดอกไม้ (Flower Bouquet) -->
+  <div class="window floating" id="win-cake" style="width: min(350px, 92vw);">
+    <div class="window-header pink">
+      <div>💐 Flower Bouquet - ช่อดอกไม้ให้แฟนน</div>
+      <div class="win-btn-control" onclick="closeWindow('win-cake')">✕</div>
+    </div>
+    <div class="window-body" style="text-align: center;">
+      <p style="font-size: 11px; margin-bottom: 6px; color: #555;">แตะที่ดอกไม้ในช่อให้เบ่งบาน หรือเลือกจัดช่อดอกไม้ได้เลย 🌸</p>
+
+      <div id="bouquet-stage" class="bouquet-stage theme-rose">
+        <!-- กระดาษห่อชั้นหลัง -->
+        <div class="bq-wrap-back"></div>
+        <div class="bq-wrap-inner"></div>
+
+        <!-- ใบไม้ประดับด้านหลัง -->
+        <div class="bq-leaf bq-leaf-l1">🌿</div>
+        <div class="bq-leaf bq-leaf-r1">🌿</div>
+
+        <!-- ดอกไม้ 5 ดอกในช่อ (แตะเพื่อเบ่งบานได้) -->
+        <div class="bouquet-flowers-group">
+          <div class="bq-flower f-pos-1 bloomed" onclick="bloomSingleFlower(this)">
+            <span class="bq-flower-icon">🌹</span>
+            <span class="bq-sparkle">✨</span>
+          </div>
+          <div class="bq-flower f-pos-2 bloomed" onclick="bloomSingleFlower(this)">
+            <span class="bq-flower-icon">🌸</span>
+            <span class="bq-sparkle">✨</span>
+          </div>
+          <div class="bq-flower f-pos-3 bloomed" onclick="bloomSingleFlower(this)">
+            <span class="bq-flower-icon">🌹</span>
+            <span class="bq-sparkle">💖</span>
+          </div>
+          <div class="bq-flower f-pos-4 bloomed" onclick="bloomSingleFlower(this)">
+            <span class="bq-flower-icon">🌸</span>
+            <span class="bq-sparkle">✨</span>
+          </div>
+          <div class="bq-flower f-pos-5 bloomed" onclick="bloomSingleFlower(this)">
+            <span class="bq-flower-icon">🌹</span>
+            <span class="bq-sparkle">✨</span>
+          </div>
+        </div>
+
+        <!-- กระดาษห่อช่อด้านหน้า (ทรงกรวยช่อดอกไม้) -->
+        <div class="bq-wrap-front">
+          <div class="bq-wrap-fold-left"></div>
+          <div class="bq-wrap-fold-right"></div>
+        </div>
+
+        <!-- โบว์ริบบิ้น + ป้ายการ์ดห้อย -->
+        <div class="bq-ribbon-box" onclick="changeBouquetCard()" title="คลิกเพื่อเปลี่ยนข้อความการ์ด">
+          <div class="bq-ribbon-bow">🎀</div>
+          <div id="bouquet-card-tag" class="bq-card-tag">ให้คนน่ารักที่สุด 💖</div>
+        </div>
+      </div>
+
+      <div id="bouquet-status" style="font-size: 12px; font-weight: bold; color: #ff1493; margin: 6px 0 8px;">💐 ช่อกุหลาบชมพูหวาน มอบให้เธอคนเดียวนะ!</div>
+
+      <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+        <button class="retro-btn" onclick="changeBouquetStyle()">🌷 เปลี่ยนช่อดอกไม้</button>
+        <button class="retro-btn" onclick="changeBouquetCard()">💌 เปลี่ยนการ์ด</button>
+        <button class="retro-btn" style="background: #ffaec9; font-weight: bold;" onclick="bloomAllFlowers()">✨ โปรยดอกไม้!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. เกมตู้คีบตุ๊กตา -->
+  <div class="window floating" id="win-fortune" style="width: min(360px, 95vw);">
+    <div class="window-header pink">
+      <div>เกมตู้คีบตุ๊กตา คีบได้ 2 ครั้งน๊าา</div>
+      <div class="win-btn-control" onclick="closeWindow('win-fortune')">✕</div>
+    </div>
+    <div class="window-body" style="text-align: center; padding: 8px;">
+      <!-- canvas ตู้คีบ -->
+      <canvas id="clawCanvas" width="300" height="200" style="border: 2px solid #2a203f; background: #e8f4ff; display: block; margin: 0 auto 8px; border-radius: 4px;"></canvas>
+      <!-- ข้อความผลลัพธ์ -->
+      <div id="fortune-display" style="min-height: 36px; background: white; margin-bottom: 8px; border: 2px inset var(--win-border-dark); padding: 6px 8px; font-size: 11px; font-weight: bold; color: #ff1493;">
+        กดซ้าย/ขวาเลื่อนแขน แล้วกด GRAB เพื่อคีบ!
+      </div>
+      <!-- ปุ่มควบคุม -->
+      <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+        <button class="retro-btn" id="clawBtnLeft"  onpointerdown="clawStartMove(-1)" onpointerup="clawStopMove()" onpointerleave="clawStopMove()">ซ้าย</button>
+        <button class="retro-btn" id="clawBtnGrab"  onclick="clawGrab()" style="background:#ffaec9; font-weight:bold;">GRAB</button>
+        <button class="retro-btn" id="clawBtnRight" onpointerdown="clawStartMove(1)"  onpointerup="clawStopMove()" onpointerleave="clawStopMove()">ขวา</button>
+      </div>
+      <div style="margin-top:6px; font-size:10px; color:#994c68;">ลองสักกี่ครั้งก็ได้!</div>
+    </div>
+  </div>
+
+  <!-- 6. Recycle Bin -->
+  <div class="window floating" id="win-trash" style="width: min(340px, 90vw);">
+    <div class="window-header">
+      <div>🗑️ Recycle Bin - บดทำลายเรื่องแย่ๆ</div>
+      <div class="win-btn-control" onclick="closeWindow('win-trash')">✕</div>
+    </div>
+    <div class="window-body" style="background: white; margin: 4px; border: 2px inset var(--win-border-dark);">
+      <div id="trash-list" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.8; color: #d00; margin-bottom: 8px;">
+        ❌ ความเครียดสะสม_2025.tmp<br>
+        ❌ ความเหนื่อยล้าจากการทำงาน.dll<br>
+        ❌ ความเศร้าใจและคนใจร้าย.exe
+      </div>
+      <div style="display: flex; gap: 4px;">
+        <input type="text" id="custom-trash-input" placeholder="พิมพ์เรื่องที่อยากทิ้ง..." style="flex: 1; border: 1.5px solid #2a203f; padding: 3px 6px; font-size: 11px;">
+        <button class="retro-btn" onclick="addCustomTrash()">+ ทิ้งเพิ่ม</button>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; padding: 4px 10px 8px;">
+      <button class="retro-btn" onclick="emptyTrash()">🧹 Shred & Delete All!</button>
+    </div>
+  </div>
+
+  <!-- Taskbar -->
+  <div class="taskbar">
+    <button class="retro-btn start-btn" onclick="triggerCuteVirus()">
+      <span style="font-size: 14px;">🌸</span> Start อวยพรร
+    </button>
+    <div class="taskbar-clock" id="clock">12:00 PM</div>
+  </div>
+
+  <!-- Audio Element -->
+  <audio id="bgm" loop>
+    <source src="Cocktail.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
