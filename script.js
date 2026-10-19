@@ -1681,6 +1681,33 @@ const FLOOR_Y = 168;          // พื้นตู้
 const CHUTE_X = 20;           // ช่องรับของ (ซ้าย)
 const CHUTE_W = 40;
 
+// ตำแหน่งช่องวางไข่คงที่ 5 จุดเดิมบนพื้นตู้ (ไม่เปลี่ยนพิกัดการวาง)
+const FIXED_SLOTS_X = [55, 100, 150, 200, 245];
+
+// ข้อมูลไข่ทั้ง 5 ฟอง (ID 1-5, สี, ของรางวัล)
+const BASE_DOLLS = [
+  { id: 1, color: '#ffb3c6', prize: "คูปองตามใจ 1 วัน " },
+  { id: 2, color: '#ffd6a0', prize: "คูปองฟรีชานมไข่มุก 1 แก้วเต็มๆ" },
+  { id: 3, color: '#c5b3ff', prize: "คูปองชาบูฟรี 1 มื้อ" },
+  { id: 4, color: '#b3f0c6', prize: "คูปองพาไปกินของอร่อยมื้อใหญ่ 1 มื้อ" },
+  { id: 5, color: '#ffe0a0', prize: "คูปองเลือกสิ่งที่อยากได้ 1 อย่าง" },
+];
+
+// ลำดับการสลับสับเปลี่ยนตำแหน่งไข่ในแต่ละรอบ
+// เช่น รอบแรก: ไข่ 1 สลับไปอยู่ที่ช่อง 4 (ดัชนีช่อง 3) ตามที่ต้องการ และสลับไปเรื่อยๆ ทุกรอบ
+const SWAP_PERMUTATIONS = [
+  [3, 4, 1, 0, 2], // รอบ 1: ช่อง 1=ไข่ 4, ช่อง 2=ไข่ 5, ช่อง 3=ไข่ 2, ช่อง 4=ไข่ 1 (1 ไป 4!), ช่อง 5=ไข่ 3
+  [1, 2, 4, 3, 0], // รอบ 2: ช่อง 1=ไข่ 2, ช่อง 2=ไข่ 3, ช่อง 3=ไข่ 5, ช่อง 4=ไข่ 4, ช่อง 5=ไข่ 1
+  [4, 0, 2, 1, 3], // รอบ 3: ช่อง 1=ไข่ 5, ช่อง 2=ไข่ 1, ช่อง 3=ไข่ 3, ช่อง 4=ไข่ 2, ช่อง 5=ไข่ 4
+  [2, 3, 0, 4, 1], // รอบ 4: ช่อง 1=ไข่ 3, ช่อง 2=ไข่ 4, ช่อง 3=ไข่ 1, ช่อง 4=ไข่ 5, ช่อง 5=ไข่ 2
+  [0, 1, 3, 2, 4], // รอบ 5: ช่อง 1=ไข่ 1, ช่อง 2=ไข่ 2, ช่อง 3=ไข่ 4, ช่อง 4=ไข่ 3, ช่อง 5=ไข่ 5
+  [3, 0, 4, 2, 1], // รอบ 6: ช่อง 1=ไข่ 4, ช่อง 2=ไข่ 1, ช่อง 3=ไข่ 5, ช่อง 4=ไข่ 3, ช่อง 5=ไข่ 2
+  [1, 4, 0, 3, 2], // รอบ 7: ช่อง 1=ไข่ 2, ช่อง 2=ไข่ 5, ช่อง 3=ไข่ 1, ช่อง 4=ไข่ 4, ช่อง 5=ไข่ 3
+  [2, 0, 3, 1, 4], // รอบ 8: ช่อง 1=ไข่ 3, ช่อง 2=ไข่ 1, ช่อง 3=ไข่ 4, ช่อง 4=ไข่ 2, ช่อง 5=ไข่ 5
+  [4, 2, 1, 0, 3], // รอบ 9: ช่อง 1=ไข่ 5, ช่อง 2=ไข่ 3, ช่อง 3=ไข่ 2, ช่อง 4=ไข่ 1, ช่อง 5=ไข่ 4
+  [0, 3, 2, 4, 1], // รอบ 10: ช่อง 1=ไข่ 1, ช่อง 2=ไข่ 4, ช่อง 3=ไข่ 3, ช่อง 4=ไข่ 5, ช่อง 5=ไข่ 2
+];
+
 // ตุ๊กตาในตู้ (x, y = จุดกลาง, r = รัศมี, color, label, ถูกคีบแล้ว?)
 let clawDolls = [];
 let clawX = 150;              // ตำแหน่ง X ของแขนคีบ (จุดกลาง)
@@ -1694,63 +1721,51 @@ let clawHeld = null;          // index ของตุ๊กตาที่ค�
 let clawAnimId = null;
 let clawCtx = null;
 
-const DOLL_COLORS  = ['#ffb3c6','#ffd6a0','#c5b3ff','#b3f0c6','#ffe0a0'];
-const DOLL_LABELS  = ['A','B','C','D','E'];
-
-// ฟังก์ชันสุ่มเรียงลำดับ (Fisher-Yates Shuffle)
-function shuffleArray(arr) {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
+// อ่านและนับรอบการเข้าเว็บ / การรีเซ็ต
+function getClawSwapRound() {
+  const saved = localStorage.getItem('claw_swap_round_idx');
+  return saved !== null ? parseInt(saved, 10) : 0;
 }
 
-// สุ่มตำแหน่ง X ของไข่ 5 ใบแบบไม่ทับซ้อนและมีระยะห่างที่พอดี
-function generateRandomDollPositions(count = 5) {
-  const minX = 70;
-  const maxX = 270;
-  const slotW = (maxX - minX) / count; // ~40px ต่อช่อง
-  const positions = [];
-
-  for (let i = 0; i < count; i++) {
-    const baseCenter = minX + (i + 0.5) * slotW;
-    const jitter = (Math.random() - 0.5) * (slotW * 0.45); // สุ่มเบี่ยงเบนเล็กน้อย ~±9px
-    positions.push(Math.round(baseCenter + jitter));
-  }
-  return positions;
+function advanceClawSwapRound() {
+  const current = getClawSwapRound();
+  const next = (current + 1) % SWAP_PERMUTATIONS.length;
+  try {
+    localStorage.setItem('claw_swap_round_idx', String(next));
+  } catch (e) {}
+  return next;
 }
 
-// สร้างไข่ตุ๊กตาชุดใหม่แบบสลับตำแหน่ง สี ป้าย และของรางวัล
-function createShuffledDolls() {
-  const randPositions = generateRandomDollPositions(5);
-  const shuffledColors = shuffleArray(DOLL_COLORS);
-  const shuffledLabels = shuffleArray(DOLL_LABELS);
-  const shuffledPrizes = shuffleArray(gashaCoupons);
-
-  clawDolls = randPositions.map((posX, i) => ({
-    x: posX,
-    y: FLOOR_Y - 17,
-    r: 13,
-    color: shuffledColors[i],
-    label: shuffledLabels[i],
-    prize: shuffledPrizes[i],
-    taken: false
-  }));
+// นำไข่ทั้ง 5 วางลงบน 5 ช่องคงที่ตามลำดับสลับของรอบนั้นๆ
+function applySwappedDolls(roundIdx) {
+  const perm = SWAP_PERMUTATIONS[roundIdx % SWAP_PERMUTATIONS.length];
+  clawDolls = FIXED_SLOTS_X.map((slotX, slotIdx) => {
+    const dollTemplate = BASE_DOLLS[perm[slotIdx]];
+    return {
+      id: dollTemplate.id,
+      x: slotX,
+      y: FLOOR_Y - 17,
+      r: 13,
+      color: dollTemplate.color,
+      label: String(dollTemplate.id),
+      prize: dollTemplate.prize,
+      taken: false
+    };
+  });
 }
 
-// สุ่มตำแหน่งไข่ทุกครั้งที่โหลดเข้าหน้าเว็บ
-createShuffledDolls();
+// สลับรอบอัตโนมัติทุกครั้งที่เปิดเข้าหน้าเว็บ
+const initialRound = advanceClawSwapRound();
+applySwappedDolls(initialRound);
 
 function clawInit(forceReset = false) {
   const canvas = document.getElementById('clawCanvas');
   if (!canvas) return;
   clawCtx = canvas.getContext('2d');
 
-  // สุ่มใหม่ถ้ายังไม่มี หรือสั่ง forceReset หรือคีบไปหมดตู้แล้ว
   if (!clawDolls.length || forceReset || clawDolls.every(d => d.taken)) {
-    createShuffledDolls();
+    const r = forceReset ? advanceClawSwapRound() : getClawSwapRound();
+    applySwappedDolls(r);
   }
 
   clawX = 150;
@@ -1766,9 +1781,10 @@ function clawInit(forceReset = false) {
 function shuffleClawDolls() {
   if (clawState !== 'idle') return;
   playClickSound();
-  createShuffledDolls();
+  const nextRound = advanceClawSwapRound();
+  applySwappedDolls(nextRound);
   const display = document.getElementById('fortune-display');
-  if (display) display.innerHTML = '🎲 สลับตำแหน่งไข่เรียบร้อยแล้ว!';
+  if (display) display.innerHTML = `🎲 สลับรอบใหม่แล้ว (รอบที่ ${nextRound + 1})!`;
   triggerConfetti();
 }
 
@@ -1837,6 +1853,12 @@ function clawDraw() {
     ctx.beginPath();
     ctx.ellipse(cx - rw*0.25, cy - rh*0.3, rw*0.35, rh*0.22, -0.4, 0, Math.PI*2);
     ctx.fill();
+
+    // หมายเลขไข่บนหัว (1..5) เพื่อให้เห็นชัดว่าไข่ฟองไหนสลับไปอยู่ช่องไหน
+    ctx.fillStyle = '#2a203f';
+    ctx.font = 'bold 8px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(d.id || (i + 1)), cx, cy - rh - 4);
 
     // ---- หน้าจอ LCD เล็กๆ (ฟีล Tamagotchi) ----
     const scrW = rw * 1.1, scrH = rh * 0.62;
@@ -1914,6 +1936,12 @@ function clawDraw() {
     ctx.fillStyle = '#2a203f';
     ctx.fillRect(cx-4, cy+2, 2, 2);
     ctx.fillRect(cx+2, cy+2, 2, 2);
+
+    // หมายเลขไข่บนหัวที่กำลังคีบ
+    ctx.fillStyle = '#2a203f';
+    ctx.font = 'bold 7px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(d.id), cx, cy - rh - 2);
   }
 }
 
