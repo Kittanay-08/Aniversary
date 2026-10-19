@@ -1778,15 +1778,6 @@ function clawInit(forceReset = false) {
   clawLoop();
 }
 
-function shuffleClawDolls() {
-  if (clawState !== 'idle') return;
-  playClickSound();
-  const nextRound = advanceClawSwapRound();
-  applySwappedDolls(nextRound);
-  const display = document.getElementById('fortune-display');
-  if (display) display.innerHTML = `🎲 สลับรอบใหม่แล้ว (รอบที่ ${nextRound + 1})!`;
-  triggerConfetti();
-}
 
 function clawLoop() {
   clawDraw();
