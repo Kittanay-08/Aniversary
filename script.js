@@ -12,10 +12,12 @@
   const img = new Image();
   img.onerror = () => {
     if (!img.src.includes('puzzle.webp')) {
-      img.src = 'puzzle.webp';
+      img.src = 'Picture/puzzle.webp';
+    } else if (!img.src.includes('พวกเด็กน้อย.webp')) {
+      img.src = 'พวกเด็กน้อย.webp';
     }
   };
-  img.src = 'พวกเด็กน้อย.webp';
+  img.src = 'Picture/พวกเด็กน้อย.webp';
 
   function setupPuzzle() {
     const canvas = document.getElementById('puzzleCanvas');
@@ -66,6 +68,14 @@
   }
 
   window.setupPuzzle = setupPuzzle;
+  window.resetPuzzlePieces = function() {
+    solved = false;
+    pieces = [];
+    setupPuzzle();
+    const status = document.getElementById('puzzleStatus');
+    if (status) status.innerHTML = '🧩 สับชิ้นส่วนใหม่แล้ว ลากมาต่อให้ครบ!';
+    playClickSound();
+  };
   img.onload = setupPuzzle;
 
   function drawPuzzle() {
@@ -544,20 +554,20 @@ function bringToFront(el) {
 }
 
 // ==========================================
-// 💿 CD PLAYER: 2 SONGS & VOLUME CONTROL
+// 💿 CD PLAYER: 2 SONGS & VOLUME CONTROL (Windows 98)
 // ==========================================
 const cdTracks = [
   {
     title: '01. เรา',
     artist: 'Love u Pimpisut',
-    src: 'Cocktail.mp3',
-    cover: '🤌🏻.jpg'
+    src: 'Music/Cocktail.mp3',
+    cover: 'Picture/🤌🏻.jpg'
   },
   {
     title: '02. รักให้เธอได้รู้',
     artist: 'Love U Naka 💖',
-    src: 'pun.mp3',
-    cover: '851180398369093543.jpg'
+    src: 'Music/pun.mp3',
+    cover: 'Picture/851180398369093543.jpg'
   }
 ];
 let currentTrackIndex = 0;
@@ -579,6 +589,9 @@ function selectTrack(indexStr, shouldPlay = true) {
 
   const coverEl = document.getElementById('cd-cover-img');
   if (coverEl) coverEl.src = track.cover;
+
+  const lcdTrack = document.getElementById('cd-lcd-track');
+  if (lcdTrack) lcdTrack.textContent = `[TRK 0${currentTrackIndex + 1}]`;
 
   bgm.src = track.src;
   bgm.volume = isAudioMuted ? 0 : (currentVolume / 100);
@@ -619,14 +632,81 @@ function stopAudio() {
   updatePlayButtonUI();
 }
 
+function ejectCdTray() {
+  playAlertSound();
+  const disc = document.getElementById('cd-disc-spinning');
+  if (disc) {
+    disc.classList.remove('spinning');
+    disc.style.transform = 'translateY(-20px) scale(0.9)';
+    setTimeout(() => {
+      disc.style.transform = 'none';
+      nextTrack();
+    }, 300);
+  } else {
+    nextTrack();
+  }
+}
+
+function toggleCdPlayer() {
+  const widget = document.getElementById('cd-player-widget');
+  if (widget) {
+    widget.style.display = (widget.style.display === 'none') ? 'block' : 'none';
+  }
+}
+
+function toggleCdPlayerMin() {
+  const body = document.getElementById('cd-layout-body');
+  if (body) {
+    body.style.display = (body.style.display === 'none') ? 'flex' : 'none';
+  }
+}
+
+function openArtistModal() {
+  const modal = document.getElementById('artist-modal');
+  if (modal) modal.style.display = 'flex';
+  playClickSound();
+}
+
+function closeArtistModal() {
+  const modal = document.getElementById('artist-modal');
+  if (modal) modal.style.display = 'none';
+  playClickSound();
+}
+
 function updatePlayButtonUI() {
   const btn = document.getElementById('cd-play-btn');
-  if (!btn) return;
-  btn.textContent = bgm.paused ? '▶' : '❚❚';
+  if (btn) btn.textContent = bgm.paused ? '▶' : '❚❚';
+
+  const disc = document.getElementById('cd-disc-spinning');
+  if (disc) {
+    if (bgm.paused) disc.classList.remove('spinning');
+    else disc.classList.add('spinning');
+  }
+
+  const lcdStatus = document.getElementById('cd-lcd-status');
+  if (lcdStatus) {
+    if (bgm.paused) {
+      lcdStatus.textContent = '⏸ PAUSE';
+      lcdStatus.classList.remove('cd-lcd-blink');
+    } else {
+      lcdStatus.textContent = '● PLAY';
+      lcdStatus.classList.add('cd-lcd-blink');
+    }
+  }
 }
 
 bgm.addEventListener('play', updatePlayButtonUI);
 bgm.addEventListener('pause', updatePlayButtonUI);
+
+// Realtime LCD timer display
+bgm.addEventListener('timeupdate', () => {
+  const lcdTime = document.getElementById('cd-lcd-time');
+  if (!lcdTime) return;
+  const cur = Math.floor(bgm.currentTime || 0);
+  const m = String(Math.floor(cur / 60)).padStart(2, '0');
+  const s = String(cur % 60).padStart(2, '0');
+  lcdTime.textContent = `${m}:${s}`;
+});
 
 // เตรียมข้อมูลเพลงแรกไว้ที่ CD Player (ไม่เล่นเพลงจนกว่าจะเข้าหน้า Desktop)
 (function initCdPlayerDisplay() {
@@ -741,6 +821,7 @@ const paintCtx = paintCanvas.getContext('2d');
 let isPainting = false;
 let currentColor = '#ff1493';
 let currentTool = 'pen';
+let currentBrushSize = 3;
 let startX = 0, startY = 0;
 let savedCanvasImage = null;
 
@@ -755,6 +836,67 @@ function setPaintTool(tool) {
   document.querySelectorAll('.p-tool-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`tool-${tool}`);
   if (activeBtn) activeBtn.classList.add('active');
+  playClickSound();
+}
+
+function setBrushSize(size, el) {
+  currentBrushSize = size;
+  document.querySelectorAll('.b-size-dot').forEach(d => d.classList.remove('active'));
+  if (el) el.classList.add('active');
+  playClickSound();
+}
+
+function minimizePaint() {
+  const win = document.getElementById('paint-main-window');
+  if (win) win.classList.toggle('minimized');
+  playClickSound();
+}
+
+function toggleMaximizePaint() {
+  const win = document.getElementById('paint-main-window');
+  if (win) {
+    win.classList.toggle('maximized');
+    setTimeout(() => {
+      // Re-init canvas size if needed
+      const imgData = paintCtx.getImageData(0, 0, paintCanvas.width, paintCanvas.height);
+      if (win.classList.contains('maximized')) {
+        paintCanvas.width = 650;
+        paintCanvas.height = 360;
+      } else {
+        paintCanvas.width = 280;
+        paintCanvas.height = 150;
+      }
+      paintCtx.fillStyle = '#ffffff';
+      paintCtx.fillRect(0, 0, paintCanvas.width, paintCanvas.height);
+      paintCtx.putImageData(imgData, 0, 0);
+    }, 150);
+  }
+  playClickSound();
+}
+
+function closePaintPrompt() {
+  const modal = document.getElementById('paint-prompt-modal');
+  if (modal) modal.style.display = 'flex';
+  playAlertSound();
+}
+
+function closePaintPromptModal() {
+  const modal = document.getElementById('paint-prompt-modal');
+  if (modal) modal.style.display = 'none';
+  playClickSound();
+}
+
+function savePaintAndClose() {
+  savePaintImage();
+  closePaintPromptModal();
+  const win = document.getElementById('paint-main-window');
+  if (win) win.style.display = 'none';
+}
+
+function dismissPaintWithoutSave() {
+  closePaintPromptModal();
+  const win = document.getElementById('paint-main-window');
+  if (win) win.style.display = 'none';
   playClickSound();
 }
 
@@ -800,30 +942,47 @@ function startDraw(e) {
 }
 
 function drawMove(e) {
-  if (!isPainting) return;
   const coords = getCanvasCoords(e);
+  const statusEl = document.getElementById('paint-coord-status');
+  if (statusEl) {
+    statusEl.textContent = `📍 X: ${Math.round(coords.x)}, Y: ${Math.round(coords.y)}`;
+  }
+
+  if (!isPainting) return;
 
   paintCtx.lineCap = 'round';
   paintCtx.lineJoin = 'round';
 
   if (currentTool === 'eraser') {
     paintCtx.strokeStyle = '#ffffff';
-    paintCtx.lineWidth = 14;
+    paintCtx.lineWidth = currentBrushSize * 3;
     paintCtx.lineTo(coords.x, coords.y);
     paintCtx.stroke();
     paintCtx.beginPath();
     paintCtx.moveTo(coords.x, coords.y);
   } else if (currentTool === 'pen') {
     paintCtx.strokeStyle = currentColor;
-    paintCtx.lineWidth = 3;
+    paintCtx.lineWidth = currentBrushSize;
     paintCtx.lineTo(coords.x, coords.y);
     paintCtx.stroke();
     paintCtx.beginPath();
     paintCtx.moveTo(coords.x, coords.y);
+  } else if (currentTool === 'spray') {
+    // Retro spray airbrush
+    paintCtx.fillStyle = currentColor;
+    const density = 16;
+    const radius = currentBrushSize * 2.5;
+    for (let i = 0; i < density; i++) {
+      const offsetX = (Math.random() - 0.5) * radius * 2;
+      const offsetY = (Math.random() - 0.5) * radius * 2;
+      if (offsetX * offsetX + offsetY * offsetY <= radius * radius) {
+        paintCtx.fillRect(coords.x + offsetX, coords.y + offsetY, 1.2, 1.2);
+      }
+    }
   } else if (currentTool === 'line') {
     paintCtx.putImageData(savedCanvasImage, 0, 0);
     paintCtx.strokeStyle = currentColor;
-    paintCtx.lineWidth = 2.5;
+    paintCtx.lineWidth = currentBrushSize;
     paintCtx.beginPath();
     paintCtx.moveTo(startX, startY);
     paintCtx.lineTo(coords.x, coords.y);
@@ -831,7 +990,7 @@ function drawMove(e) {
   } else if (currentTool === 'circle') {
     paintCtx.putImageData(savedCanvasImage, 0, 0);
     paintCtx.strokeStyle = currentColor;
-    paintCtx.lineWidth = 2.5;
+    paintCtx.lineWidth = currentBrushSize;
     const radius = Math.sqrt(Math.pow(coords.x - startX, 2) + Math.pow(coords.y - startY, 2));
     paintCtx.beginPath();
     paintCtx.arc(startX, startY, radius, 0, Math.PI * 2);
@@ -845,7 +1004,7 @@ function stopDraw() {
 }
 
 function stampIcon(x, y, tool) {
-  paintCtx.font = '18px Arial';
+  paintCtx.font = `${currentBrushSize * 5 + 12}px Arial`;
   paintCtx.textAlign = 'center';
   paintCtx.textBaseline = 'middle';
   const icons = { heart: '💖', star: '✨' };
@@ -942,17 +1101,18 @@ function tuneAntenna() {
 
 // 🖼️ Polaroid Shake & Stickers (รองรับทั้งรูปภาพและวิดีโอ)
 const photoFiles = [
-  { src: 'กินข้าวครั้งแรก.jpg', caption: 'รูปที่ 1: ไปกินข้าวกับแฟนครั้งแรกม เจอกันครั้งแรก' },
-  { src: 'HBD Fan.jpg', caption: 'รูปที่ 2: พอเห็นว่าหนูชอบเค้กและของที่ให้พี่ก็ดีมจมากก💖' },
-  { src: 'ไปเฉียงเหนือเฟสด้วยกันนน.jpg', caption: 'รูปที่ 3: ไปดูคอนเสิร์ตกับหนูค่ตสนุกก' },
-  { src: 'งานโณงแรม.jpg', caption: 'รูปที่ 4: งานวั้นนั้นคุณแต่งตัวสวยม๊ากกก' },
-  { src: 'ไปกินๆฮาจิบัง.webp', caption: 'รูปที่ 5: ไปกินๆแล้วก็กินๆ' },
-  { src: 'ไปกินโบนัสสุกี้ ร่อยม๊ากกกก.jpg', caption: 'รูปที่ 6: วันที่ค่ตหิวข้าวว แต่อร่อยย' },
-  { src: 'ไปหอศิลป์.jpg', caption: 'รูปที่ 7: ไปเที่ยวๆไปดูหอศิลป์ที่หนูเคยบอกว่าอยากไปป 🌸' },
+  { src: 'Picture/กินข้าวครั้งแรก.jpg', caption: 'รูปที่ 1: ไปกินข้าวกับแฟนครั้งแรกม เจอกันครั้งแรก' },
+  { src: 'Picture/HBD Fan.jpg', caption: 'รูปที่ 2: พอเห็นว่าหนูชอบเค้กและของที่ให้พี่ก็ดีมจมากก💖' },
+  { src: 'Picture/ไปเฉียงเหนือเฟสด้วยกันนน.jpg', caption: 'รูปที่ 3: ไปดูคอนเสิร์ตกับหนูค่ตสนุกก' },
+  { src: 'Picture/งานโณงแรม.jpg', caption: 'รูปที่ 4: งานวั้นนั้นคุณแต่งตัวสวยม๊ากกก' },
+  { src: 'Picture/ไปกินๆฮาจิบัง.webp', caption: 'รูปที่ 5: ไปกินๆแล้วก็กินๆ' },
+  { src: 'Picture/ไปกินโบนัสสุกี้ ร่อยม๊ากกกก.jpg', caption: 'รูปที่ 6: วันที่ค่ตหิวข้าวว แต่อร่อยย' },
+  { src: 'Picture/ไปหอศิลป์.jpg', caption: 'รูปที่ 7: ไปเที่ยวๆไปดูหอศิลป์ที่หนูเคยบอกว่าอยากไปป 🌸' },
+  { src: 'Picture/VID_20251229_081904_419.jpg', caption: 'รูปที่ 8: โมเมนต์น่ารักๆ ของเรา 💕' },
 ];
 const videoFiles = [
-  { src: 'มักคุเทส.mp4', caption: 'รูปที่ 8: หนูเป็นวิทยากรในการพาเข้าชมน๊าาน่ารักมากก 💕' },
-  { src: 'มาบ้านเราครั้งแรก.mp4', caption: 'รูปที่ 9: หนูมาบ้านพี่ครั้งแรกก 🥰' },
+  { src: 'Picture/มักคุเทส.mp4', caption: 'วิดีโอที่ 9: หนูเป็นวิทยากรในการพาเข้าชมน๊าาน่ารักมากก 💕' },
+  { src: 'Picture/มาบ้านเราครั้งแรก.mp4', caption: 'วิดีโอที่ 10: หนูมาบ้านพี่ครั้งแรกก 🥰' },
 ];
 let photoIndex = 0;
 const stickers = ['🎀', '🕶️', '👑', '✨', '💖'];
@@ -1080,31 +1240,33 @@ function addSticker() {
   triggerConfetti();
 }
 
-// 💐 Flower Bouquet (ช่อดอกไม้ให้เธอ)
+// ==========================================
+// 💐 FLOWER BOUQUET (Luxury Florist Edition)
+// ==========================================
 const bouquetThemes = [
   {
-    name: 'ช่อกุหลาบชมพูหวาน 🌹',
+    name: 'ช่อกุหลาบเจ้าหญิงสีชมพู 🌹',
     themeClass: 'theme-rose',
-    flowers: ['🌹', '🌸', '🌹', '🌸', '🌹'],
-    status: '💐 ช่อกุหลาบชมพูหวาน มอบให้เธอคนเดียวนะ!'
+    flowers: ['🌹', '🌸', '🌹', '🌸', '🌹', '🌸', '🌹', '🌸', '🌹'],
+    status: '💐 ช่อกุหลาบเจ้าหญิงสีชมพู มอบให้เธอคนเดียวนะ!'
   },
   {
-    name: 'ช่อทิวลิปพาสเทล 🌷',
-    themeClass: 'theme-tulip',
-    flowers: ['🌷', '🌸', '🌷', '🌸', '🌷'],
-    status: '🌷 ช่อทิวลิปพาสเทล แทนความรักที่อบอุ่นเสมอ!'
-  },
-  {
-    name: 'ช่อทานตะวันสดใส 🌻',
+    name: 'ช่อทานตะวันสดใสคลาสสิก 🌻',
     themeClass: 'theme-sunflower',
-    flowers: ['🌻', '🌼', '🌻', '🌼', '🌻'],
-    status: '🌻 ช่อทานตะวันสดใส เธอคือความสดใสของเค้านะ!'
+    flowers: ['🌻', '🌼', '🌻', '🌼', '🌻', '🌼', '🌻', '🌼', '🌻'],
+    status: '🌻 ช่อทานตะวันสดใส เธอคือรอยยิ้มและความสว่างสดใสของเค้า!'
   },
   {
-    name: 'ช่อเดซี่แสนหวาน 🌼',
-    themeClass: 'theme-daisy',
-    flowers: ['🌼', '🌸', '💐', '🌸', '🌼'],
-    status: '🌼 ช่อเดซี่น่ารักๆ สำหรับคนเก่งของเค้า!'
+    name: 'ช่อทิวลิปเกาหลีพาสเทล 🌷',
+    themeClass: 'theme-tulip',
+    flowers: ['🌷', '🌸', '🌷', '🌸', '🌷', '🌸', '🌷', '🌸', '🌷'],
+    status: '🌷 ช่อทิวลิปพาสเทล สื่อถึงความรักที่จริงใจและอ่อนโยนที่สุด'
+  },
+  {
+    name: 'ช่อโบตั๋นและเดซี่แสนหวาน 🌸',
+    themeClass: 'theme-peony',
+    flowers: ['🌸', '🌼', '🌺', '🌸', '💐', '🌸', '🌺', '🌼', '🌸'],
+    status: '🌸 ช่อโบตั๋นและดอกไม้หวานๆ สำหรับคนเก่งคนพิเศษ!'
   }
 ];
 let bouquetThemeIdx = 0;
@@ -1157,12 +1319,7 @@ function changeBouquetStyle() {
 }
 
 function changeBouquetCard() {
-  bouquetCardIdx = (bouquetCardIdx + 1) % bouquetCards.length;
-  const tagEl = document.getElementById('bouquet-card-tag');
-  if (tagEl) {
-    tagEl.textContent = bouquetCards[bouquetCardIdx];
-  }
-  playClickSound();
+  openCardWriter();
 }
 
 function bloomAllFlowers() {
@@ -1172,14 +1329,343 @@ function bloomAllFlowers() {
     f.classList.remove('bloomed');
     setTimeout(() => {
       f.classList.add('bloomed');
-    }, i * 70);
+    }, i * 60);
   });
 
   const statusEl = document.getElementById('bouquet-status');
   if (statusEl) {
-    statusEl.textContent = '💐 เย้! มอบช่อดอกไม้ให้คนพิเศษ ขอให้มีความสุขมากๆ นะ ✨';
+    statusEl.textContent = '💐 มอบช่อดอกไม้สุดพิเศษให้เธอ ขอให้มีความสุขและมีรอยยิ้มในทุกๆ วันนะ ✨';
   }
   triggerConfetti();
+  spawnBouquetPetals();
+}
+
+function spawnBouquetPetals() {
+  const petals = ['🌸', '💖', '✨', '🌹', '🌷', '🤍'];
+  for (let i = 0; i < 24; i++) {
+    const petal = document.createElement('span');
+    petal.textContent = petals[Math.floor(Math.random() * petals.length)];
+    petal.style.cssText = `
+      position: fixed;
+      left: ${Math.random() * 85 + 5}vw;
+      top: ${Math.random() * 30 + 15}vh;
+      font-size: ${Math.random() * 14 + 14}px;
+      pointer-events: none;
+      z-index: 99999;
+      opacity: 1;
+      transform: translateY(0) rotate(0deg) scale(0.6);
+      transition: all ${Math.random() * 1.4 + 1.2}s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    `;
+    document.body.appendChild(petal);
+    requestAnimationFrame(() => {
+      petal.style.transform = `translateY(${Math.random() * 220 + 160}px) rotate(${Math.random() * 360}deg) scale(1.2)`;
+      petal.style.opacity = '0';
+    });
+    setTimeout(() => petal.remove(), 2500);
+  }
+}
+
+// 💌 Bouquet Card Writer Modal
+function openCardWriter() {
+  const modal = document.getElementById('card-writer-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    const currentText = document.getElementById('bouquet-card-text');
+    const input = document.getElementById('custom-card-input');
+    if (currentText && input) {
+      input.value = currentText.textContent.trim();
+    }
+  }
+  playClickSound();
+}
+
+function closeCardWriter() {
+  const modal = document.getElementById('card-writer-modal');
+  if (modal) modal.style.display = 'none';
+  playClickSound();
+}
+
+function selectPresetCard(text) {
+  const input = document.getElementById('custom-card-input');
+  if (input) input.value = text;
+  playClickSound();
+}
+
+function saveCustomCard() {
+  const input = document.getElementById('custom-card-input');
+  const cardTextEl = document.getElementById('bouquet-card-text');
+  if (input && cardTextEl) {
+    const val = input.value.trim();
+    if (val) {
+      cardTextEl.textContent = val;
+    }
+  }
+  closeCardWriter();
+  triggerConfetti();
+  playKissSound();
+}
+
+// ==========================================
+// 🧩 HELP TOPICS (Windows 98 Help System)
+// ==========================================
+const helpArticles = [
+  {
+    title: '📖 กฎการดูแลแฟน 5 ข้อ',
+    content: `
+      <b>กฎเหล็กประจำหัวใจ:</b><br><br>
+      1. <b>แฟนถูกเสมอ</b> — แม้จะงอแงก็น่ารักที่สุดในโลกเสมอ 🥰<br>
+      2. <b>ห้ามปล่อยให้หิว</b> — เมื่อหิวต้องรีบพาไปกินของอร่อยทันทีไม่มีข้ออ้าง 🍜<br>
+      3. <b>กอดและบอกรัก</b> — อย่างน้อยวันละ 3 เวลา หลังตื่นนอนและก่อนนอน 💖<br>
+      4. <b>เป็นผู้ฟังที่ดี</b> — รับฟังทุกเรื่องที่หนูเล่า คอยลูบหัวและให้กำลังใจ 🌸<br>
+      5. <b>อยู่ข้างๆ ตลอดไป</b> — จะไม่ปล่อยให้หนูรู้สึกเดียวดายแน่นอนค่ะ ✨
+    `
+  },
+  {
+    title: '🧁 รวมเมนูของโปรดหนู',
+    content: `
+      <b>เมนูเพิ่มพลังใจของคนเก่ง:</b><br><br>
+      🍲 <b>ชาบู & สุกี้ร้อนๆ:</b> ซดน้ำซุปฟินๆ กินเนื้อนุ่มๆ แบบไม่อั้น<br>
+      🧋 <b>ชานมไข่มุก:</b> หวานกำลังดี เคี้ยวไข่มุกหนึบหนับ<br>
+      🍜 <b>ราเมนฮาจิบัง:</b> บะหมี่เส้นเหนียวนุ่มของโปรด<br>
+      🍰 <b>เค้กและของหวาน:</b> ขนมหวานเพิ่มรอยยิ้มได้เสมออ 💕
+    `
+  },
+  {
+    title: '🥺 วิธีง้อเวลาแฟนงอน',
+    content: `
+      <b>คู่มือฉุกเฉินเมื่อแฟนนิ่งหรือหน้างอ:</b><br><br>
+      ขั้นที่ 1: เข้าไปกอดแน่นๆ ทันที ไม่ปล่อยให้คิดมาก 🫂<br>
+      ขั้นที่ 2: ขอโทษด้วยความจริงใจ และหอมแก้ม 1 ที 💋<br>
+      ขั้นที่ 3: พาไปกินของอร่อยที่ชอบที่สุด 🥞<br>
+      ขั้นที่ 4: ยื่น "คูปองตามใจ 1 วัน" ให้ใช้สิทธิ์ได้เลย! 🎟️
+    `
+  },
+  {
+    title: '✈️ แพลนเที่ยวของเรา',
+    content: `
+      <b>หมุดหมายความสุขที่เราจะไปด้วยกัน:</b><br><br>
+      🎸 <b>คอนเสิร์ตเฉียงเหนือเฟส:</b> ไปกระโดดร้องเพลงด้วยกันอีกรอบ!<br>
+      🎨 <b>หอศิลป์ & นิทรรศการ:</b> เดินจับมือดูงานศิลปะชิลๆ 🖼️<br>
+      🌊 <b>ทริปทะเลรับลมหนาว:</b> ถ่ายรูปสวยๆ ให้หนูลงไอจีเยอะๆ<br>
+      ☕ <b>ทัวร์คาเฟ่น่ารัก:</b> เช็คอินร้านกาแฟสวยๆ ถ่ายรูปคู่กัน ✨
+    `
+  },
+  {
+    title: '💖 ความในใจที่ไม่เคยบอก',
+    content: `
+      <b>จากใจถึงเธอคนพิเศษ:</b><br><br>
+      ขอบคุณที่ก้าวเข้ามาเป็นความสดใสในชีวิตพี่นะ 1 ปี 1 เดือนที่ผ่านมามีความหมายมากๆ<br>
+      ทุกครั้งที่เห็นหนูยิ้ม หรือหัวเราะ มันทำให้วันเหนื่อยๆ กลายเป็นวันที่ดีเสมอ<br>
+      รักหนูที่สุดเลยนะ อยู่เป็นรอยยิ้มให้กันแบบนี้ไปนานๆ นะคะ 💕
+    `
+  }
+];
+
+function switchHelpTab(tabName) {
+  ['contents', 'index', 'find'].forEach(name => {
+    const tabBtn = document.getElementById('tab-btn-' + name);
+    const panel = document.getElementById('help-panel-' + name);
+    if (tabBtn) tabBtn.classList.toggle('active', name === tabName);
+    if (panel) panel.style.display = (name === tabName) ? 'block' : 'none';
+  });
+
+  if (tabName === 'index') {
+    showHelpArticle(0);
+  } else if (tabName === 'find') {
+    handleHelpSearch('');
+  }
+  playClickSound();
+}
+
+function showHelpArticle(idx) {
+  const article = helpArticles[idx];
+  if (!article) return;
+
+  document.querySelectorAll('.help-topic-item').forEach((item, i) => {
+    item.classList.toggle('active', i === idx);
+  });
+
+  const pane = document.getElementById('help-article-pane');
+  if (pane) {
+    pane.innerHTML = `
+      <div style="font-weight:bold; font-size:12px; color:#ff1493; border-bottom:1px dashed #ffaec9; padding-bottom:4px; margin-bottom:8px;">
+        ${article.title}
+      </div>
+      <div style="font-size:10.5px; line-height:1.7; color:#222;">
+        ${article.content}
+      </div>
+    `;
+  }
+  playClickSound();
+}
+
+function handleHelpSearch(query) {
+  const resultsContainer = document.getElementById('help-find-results');
+  if (!resultsContainer) return;
+
+  const q = (query || '').trim().toLowerCase();
+  resultsContainer.innerHTML = '';
+
+  const matched = helpArticles.map((art, idx) => ({ art, idx })).filter(item => {
+    if (!q) return true;
+    return item.art.title.toLowerCase().includes(q) || item.art.content.toLowerCase().includes(q);
+  });
+
+  if (matched.length === 0) {
+    resultsContainer.innerHTML = '<div style="color:#777; padding:8px; text-align:center;">ไม่พบบันทึกที่ตรงกัน ลองค้นหาคำอื่นดูนะ 🔍</div>';
+    return;
+  }
+
+  matched.forEach(({ art, idx }) => {
+    const div = document.createElement('div');
+    div.className = 'help-find-result-item';
+    div.innerHTML = `<b>${art.title}</b>`;
+    div.onclick = () => {
+      switchHelpTab('index');
+      showHelpArticle(idx);
+    };
+    resultsContainer.appendChild(div);
+  });
+}
+
+function toggleHelpWidget() {
+  const widget = document.getElementById('help-topics-widget');
+  if (widget) {
+    widget.style.display = (widget.style.display === 'none') ? 'block' : 'none';
+    playClickSound();
+  }
+}
+
+function togglePuzzleHint() {
+  const overlay = document.getElementById('puzzle-hint-overlay');
+  if (overlay) {
+    const isShowing = overlay.style.display !== 'none';
+    overlay.style.display = isShowing ? 'none' : 'block';
+    playClickSound();
+  }
+}
+
+function openPrintLoveDialog() {
+  const dlg = document.getElementById('print-cert-dialog');
+  if (dlg) dlg.style.display = 'flex';
+  playClickSound();
+}
+
+function closePrintLoveDialog() {
+  const dlg = document.getElementById('print-cert-dialog');
+  if (dlg) dlg.style.display = 'none';
+  playClickSound();
+}
+
+function confirmPrintLove() {
+  closePrintLoveDialog();
+  triggerConfetti();
+  playKissSound();
+  alert("🖨️ [Windows LoveJet 2026]\\nพิมพ์ใบรับรองแฟนดีเด่นเรียบร้อยแล้ว!\\nความรักนี้มีผลบังคับใช้ตลอดไปไม่มีวันหมดอายุ 💕");
+}
+
+// ==========================================
+// 🌸 START MENU, CALENDAR & SHUT DOWN
+// ==========================================
+function toggleStartMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('start-menu-popup');
+  const btn = document.getElementById('start-btn');
+  if (!menu) return;
+
+  const isShowing = menu.style.display === 'flex';
+  menu.style.display = isShowing ? 'none' : 'flex';
+  if (btn) btn.classList.toggle('active', !isShowing);
+  playClickSound();
+}
+
+function closeStartMenu() {
+  const menu = document.getElementById('start-menu-popup');
+  const btn = document.getElementById('start-btn');
+  if (menu) menu.style.display = 'none';
+  if (btn) btn.classList.remove('active');
+}
+
+// ปิด Start Menu เมื่อคลิกที่อื่นบนหน้าจอ
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('start-menu-popup');
+  const btn = document.getElementById('start-btn');
+  if (menu && menu.style.display === 'flex') {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+      closeStartMenu();
+    }
+  }
+});
+
+function restoreWidget(widgetId) {
+  const el = document.getElementById(widgetId);
+  if (el) {
+    el.style.display = 'block';
+    el.classList.remove('minimized');
+    bringToFront(el);
+    playClickSound();
+  }
+}
+
+function toggleCalendarDialog() {
+  const dlg = document.getElementById('calendar-popup');
+  if (!dlg) return;
+  const isShowing = dlg.style.display === 'flex';
+  dlg.style.display = isShowing ? 'none' : 'flex';
+  if (!isShowing) updateCalendarLive();
+  playClickSound();
+}
+
+function updateCalendarLive() {
+  const clockEl = document.getElementById('cal-live-clock');
+  const dateEl = document.getElementById('cal-live-date');
+  const now = new Date();
+  if (clockEl) {
+    clockEl.textContent = now.toLocaleTimeString('en-US');
+  }
+  if (dateEl) {
+    const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+    const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    dateEl.textContent = `วัน${thaiDays[now.getDay()]}ที่ ${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+  }
+}
+setInterval(() => {
+  const dlg = document.getElementById('calendar-popup');
+  if (dlg && dlg.style.display === 'flex') {
+    updateCalendarLive();
+  }
+}, 1000);
+
+function openShutDownDialog() {
+  const dlg = document.getElementById('shutdown-dialog');
+  if (dlg) dlg.style.display = 'flex';
+  playAlertSound();
+}
+
+function closeShutDownDialog() {
+  const dlg = document.getElementById('shutdown-dialog');
+  if (dlg) dlg.style.display = 'none';
+  playClickSound();
+}
+
+function confirmShutDown() {
+  closeShutDownDialog();
+  const selectedOpt = document.querySelector('input[name="shutdown_opt"]:checked')?.value || 'love';
+  
+  if (selectedOpt === 'love') {
+    triggerConfetti();
+    playKissSound();
+    alert("💖 สัญญาแล้วนะ! เราจะรักและอยู่เคียงข้างกันตลอดไป รักแฟนที่สุดเลยยย 🥰");
+  } else if (selectedOpt === 'kiss') {
+    applyKissStamp();
+    playKissSound();
+    triggerConfetti();
+    alert("💋 จุ๊บๆ! ได้รับกอดและหอมแก้ม 1 ทีเรียบร้อยแล้วว ชื่นใจที่สุด 💕");
+  } else if (selectedOpt === 'restart') {
+    triggerConfetti();
+    playClickSound();
+    alert("🔄 Restart ระบบหัวใจสำเร็จ... ตอนนี้หัวใจเต้นแรงเพราะคิดถึงเธอ 100% ✨");
+  }
 }
 
 // เกมตู้คีบตุ๊กตา

@@ -277,20 +277,30 @@
       
       <!-- คอลัมน์ซ้าย: CD Player & Help Topics Gallery -->
       <div class="desktop-left-widgets">
-        <!-- 1. CD PLAYER -->
-        <div class="cd-player-widget window">
+        <!-- 1. CD PLAYER (Windows 98 Style) -->
+        <div class="cd-player-widget window" id="cd-player-widget">
           <div class="window-header">
-            <span>💿 CD Player</span>
-            <div class="win-btn-control">✕</div>
+            <span>💿 CD Player - Anniversary Edition</span>
+            <div style="display: flex; gap: 2px;">
+              <div class="win-btn-control" onclick="toggleCdPlayerMin()" title="ย่อหน้าต่าง">_</div>
+              <div class="win-btn-control" onclick="toggleCdPlayer()" title="ปิดเครื่องเล่นเพลง">✕</div>
+            </div>
           </div>
-          <div class="cd-layout">
-            <div class="cd-album-art" style="padding:0; overflow:hidden; border-radius:4px;">
+          <div class="cd-layout" id="cd-layout-body">
+            <div class="cd-album-art" style="padding:0; overflow:hidden; border-radius:4px; position:relative;">
               <img id="cd-cover-img" src="🤌🏻.jpg" style="width:100%; height:100%; object-fit:cover; display:block;">
+              <div id="cd-disc-spinning" class="cd-disc-spinning"></div>
             </div>
             <div class="cd-info-col">
+              <!-- Digital Retro LCD Display -->
+              <div class="cd-lcd-screen">
+                <span id="cd-lcd-track">[TRK 01]</span>
+                <span id="cd-lcd-time">00:00</span>
+                <span id="cd-lcd-status" class="cd-lcd-blink">● DISC IN</span>
+              </div>
               <div class="cd-field-row">
                 <span class="cd-label">Artist:</span>
-                <div class="cd-dropdown"><span id="cd-artist-label">Love u Pimpisut</span></div>
+                <div class="cd-dropdown" onclick="openArtistModal()" title="คลิกเพื่อดูข้อความศิลปิน"><span id="cd-artist-label">Love u Pimpisut</span> <span style="font-size: 8px;">▼</span></div>
               </div>
               <div class="cd-field-row">
                 <span class="cd-label">Track:</span>
@@ -311,73 +321,130 @@
                 <button class="cd-ctrl-btn" id="cd-play-btn" onclick="toggleAudio()" style="color: #ff1493;" title="เล่น/หยุดชั่วคราว">▶ ❚❚</button>
                 <button class="cd-ctrl-btn" onclick="nextTrack()" title="เพลงถัดไป">▶▶</button>
                 <button class="cd-ctrl-btn" onclick="stopAudio()" title="หยุดเล่น">■</button>
+                <button class="cd-ctrl-btn" onclick="ejectCdTray()" title="เปลี่ยนแผ่น / แผ่นถัดไป">⏏</button>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 2. HELP TOPICS PHOTO WIDGET -->
-        <div class="help-photo-widget window">
+        <div class="help-photo-widget window" id="help-topics-widget">
           <div class="window-header">
             <span>Help Topics: Windows Help</span>
-            <div class="win-btn-control">✕</div>
+            <div class="win-btn-control" onclick="toggleHelpWidget()" title="ปิดหน้าต่าง">✕</div>
           </div>
           <div class="help-tab-bar">
-            <div class="help-tab active">Contents</div>
-            <div class="help-tab">Index</div>
-            <div class="help-tab">Find</div>
+            <div class="help-tab active" id="tab-btn-contents" onclick="switchHelpTab('contents')">Contents</div>
+            <div class="help-tab" id="tab-btn-index" onclick="switchHelpTab('index')">Index</div>
+            <div class="help-tab" id="tab-btn-find" onclick="switchHelpTab('find')">Find</div>
           </div>
-          <div class="help-photo-container" style="padding:0; overflow:hidden; position:relative; height:160px;">
-            <canvas id="puzzleCanvas" style="display:block; width:100%; height:100%;"></canvas>
+
+          <!-- PANEL 1: Contents (Jigsaw Puzzle) -->
+          <div class="help-tab-panel active" id="help-panel-contents">
+            <div class="help-photo-container" style="padding:0; overflow:hidden; position:relative; height:160px;">
+              <canvas id="puzzleCanvas" style="display:block; width:100%; height:100%;"></canvas>
+              <div id="puzzle-hint-overlay" class="puzzle-hint-overlay" style="display:none;" onclick="togglePuzzleHint()">
+                <img src="Picture/พวกเด็กน้อย.webp" alt="Hint Full Image" onerror="this.onerror=null; this.src='Picture/puzzle.webp';" style="width:100%; height:100%; object-fit:cover;">
+                <span class="hint-badge">💡 ภาพเฉลย (แตะเพื่อปิด)</span>
+              </div>
+            </div>
+            <div style="text-align:center; padding:2px 6px 0; font-size:9px; color:#994c68;" id="puzzleStatus">🧩 ลากชิ้นส่วนมาต่อให้ครบ!</div>
+            <div class="help-btn-row">
+              <button class="help-small-btn" onclick="togglePuzzleHint()" title="ดูภาพต้นฉบับ">Display (ดูภาพเต็ม)</button>
+              <button class="help-small-btn" onclick="openPrintLoveDialog()" title="พิมพ์ใบประกาศความรัก">Print...</button>
+              <button class="help-small-btn" onclick="resetPuzzlePieces()" title="สับชิ้นส่วนใหม่">Cancel</button>
+            </div>
           </div>
-          <div style="text-align:center; padding:2px 6px 0; font-size:9px; color:#994c68;" id="puzzleStatus">🧩 ลากชิ้นส่วนมาต่อให้ครบ!</div>
-          <div class="help-btn-row">
-            <button class="help-small-btn" onclick="triggerConfetti()">Display</button>
-            <button class="help-small-btn" onclick="triggerConfetti()">Print...</button>
-            <button class="help-small-btn">Cancel</button>
+
+          <!-- PANEL 2: Index (Romantic Help Topics Index) -->
+          <div class="help-tab-panel" id="help-panel-index" style="display:none;">
+            <div class="help-index-body">
+              <div class="help-index-sidebar">
+                <div class="help-topic-item active" id="topic-item-0" onclick="showHelpArticle(0)">📖 1. กฎการดูแลแฟน 5 ข้อ</div>
+                <div class="help-topic-item" id="topic-item-1" onclick="showHelpArticle(1)">🧁 2. รวมเมนูของโปรดหนู</div>
+                <div class="help-topic-item" id="topic-item-2" onclick="showHelpArticle(2)">🥺 3. วิธีง้อเวลาแฟนงอน</div>
+                <div class="help-topic-item" id="topic-item-3" onclick="showHelpArticle(3)">✈️ 4. แพลนเที่ยวของเรา</div>
+                <div class="help-topic-item" id="topic-item-4" onclick="showHelpArticle(4)">💖 5. ความในใจที่ไม่เคยบอก</div>
+              </div>
+              <div class="help-article-pane" id="help-article-pane">
+                <!-- Content dynamically populated -->
+              </div>
+            </div>
+            <div class="help-btn-row">
+              <button class="help-small-btn" onclick="openPrintLoveDialog()">Print...</button>
+              <button class="help-small-btn" onclick="switchHelpTab('contents')">Back to Puzzle</button>
+            </div>
+          </div>
+
+          <!-- PANEL 3: Find (Search Topics) -->
+          <div class="help-tab-panel" id="help-panel-find" style="display:none;">
+            <div class="help-find-body">
+              <div style="font-size:10px; margin-bottom:4px; font-weight:bold; color:#4a152d;">พิมพ์คำค้นหาเรื่องราวความรัก:</div>
+              <div style="display:flex; gap:4px; margin-bottom:6px;">
+                <input type="text" id="help-find-input" placeholder="เช่น รัก, หิว, เที่ยว, กอด, งอน..." oninput="handleHelpSearch(this.value)" style="flex:1; border:2px inset #808080; padding:3px 6px; font-size:10px; font-family:'JetBrains Mono',monospace;">
+                <button class="help-small-btn" onclick="handleHelpSearch(document.getElementById('help-find-input').value)">Search</button>
+              </div>
+              <div class="help-find-results" id="help-find-results">
+                <!-- Dynamic search results -->
+              </div>
+            </div>
+            <div class="help-btn-row">
+              <button class="help-small-btn" onclick="triggerConfetti()">Display</button>
+              <button class="help-small-btn" onclick="switchHelpTab('contents')">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- คอลัมน์ขวา: 🎨 UNTITLED.PNG (Paint App) -->
-      <div class="paint-main-window">
+      <div class="paint-main-window" id="paint-main-window">
         <div class="paint-header">
-          <span>วาดๆได้เลยน๊าา.PNG</span>
+          <span>🎨 วาดๆได้เลยน๊าา.PNG</span>
           <div style="display: flex; gap: 2px;">
-            <div class="win-btn-control" style="width: 12px; height: 11px; font-size: 6px;">_</div>
-            <div class="win-btn-control" style="width: 12px; height: 11px; font-size: 6px;">□</div>
-            <div class="win-btn-control" style="width: 12px; height: 11px; font-size: 6px;">✕</div>
+            <div class="win-btn-control" onclick="minimizePaint()" title="ย่อหน้าต่าง" style="width: 14px; height: 12px; font-size: 7px; display:flex; align-items:center; justify-content:center;">_</div>
+            <div class="win-btn-control" onclick="toggleMaximizePaint()" title="ขยายเต็มจอ" style="width: 14px; height: 12px; font-size: 7px; display:flex; align-items:center; justify-content:center;">□</div>
+            <div class="win-btn-control" onclick="closePaintPrompt()" title="ปิดโปรแกรมวาดรูป" style="width: 14px; height: 12px; font-size: 7px; display:flex; align-items:center; justify-content:center;">✕</div>
           </div>
         </div>
 
-        <div class="paint-body-layout">
+        <div class="paint-body-layout" id="paint-body-layout">
           <div class="paint-tools-sidebar">
-            <div class="p-tool-btn active" id="tool-pen" onclick="setPaintTool('pen')">
+            <div class="p-tool-btn active" id="tool-pen" onclick="setPaintTool('pen')" title="ดินสอ (Pen)">
               <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
             </div>
-            <div class="p-tool-btn" id="tool-eraser" onclick="setPaintTool('eraser')">
+            <div class="p-tool-btn" id="tool-eraser" onclick="setPaintTool('eraser')" title="ยางลบ (Eraser)">
               <svg viewBox="0 0 24 24"><path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.78-.78 2.05 0 2.83L5.03 20c.37.37.89.59 1.41.59H19c.55 0 1-.45 1-1s-.45-1-1-1h-7.17l8.76-8.76c.78-.78.78-2.05 0-2.83l-5.04-5.04c-.39-.38-.9-.57-1.41-.57z"/></svg>
             </div>
-            <div class="p-tool-btn" id="tool-line" onclick="setPaintTool('line')">
+            <div class="p-tool-btn" id="tool-line" onclick="setPaintTool('line')" title="เส้นตรง (Line)">
               <svg viewBox="0 0 24 24"><path d="M19 3L3 19l2 2L21 5z"/></svg>
             </div>
-            <div class="p-tool-btn" id="tool-circle" onclick="setPaintTool('circle')">
+            <div class="p-tool-btn" id="tool-circle" onclick="setPaintTool('circle')" title="วงกลม (Circle)">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
             </div>
-            <div class="p-tool-btn" id="tool-heart" onclick="setPaintTool('heart')">
+            <div class="p-tool-btn" id="tool-heart" onclick="setPaintTool('heart')" title="หัวใจ (Heart)">
               <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             </div>
-            <div class="p-tool-btn" id="tool-star" onclick="setPaintTool('star')">
+            <div class="p-tool-btn" id="tool-star" onclick="setPaintTool('star')" title="ดาว (Star)">
               <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <div class="p-tool-btn" id="tool-spray" onclick="setPaintTool('spray')" title="สเปรย์แอร์บรัช (Airbrush)">
+              <span style="font-size: 13px;">💨</span>
+            </div>
+
+            <!-- Brush Size Picker -->
+            <div class="brush-size-box">
+              <div class="b-size-dot dot-1 active" onclick="setBrushSize(2, this)" title="เส้นบาง 2px"></div>
+              <div class="b-size-dot dot-2" onclick="setBrushSize(5, this)" title="เส้นกลาง 5px"></div>
+              <div class="b-size-dot dot-3" onclick="setBrushSize(10, this)" title="เส้นหนา 10px"></div>
             </div>
           </div>
 
-          <div class="paint-canvas-container">
+          <div class="paint-canvas-container" id="paint-canvas-container">
             <canvas id="customPaintCanvas" width="280" height="150"></canvas>
           </div>
         </div>
 
-        <div class="paint-bottom-bar">
+        <div class="paint-bottom-bar" id="paint-bottom-bar">
           <div class="paint-current-preview">
             <div class="p-curr-color-box" id="current-color-indicator"></div>
           </div>
@@ -402,9 +469,12 @@
           </div>
         </div>
 
-        <div class="paint-action-row">
-          <button class="retro-btn" onclick="clearPaintBoard()">🧹 ล้าง</button>
-          <button class="retro-btn" style="background: #ff85aa; color: #fff;" onclick="savePaintImage()">💾 SAVE PNG</button>
+        <div class="paint-action-row" id="paint-action-row" style="display:flex; justify-content:space-between; align-items:center;">
+          <div id="paint-coord-status" style="font-family:'MS Gothic', monospace; font-size:9px; color:#555;">📍 X: 0, Y: 0</div>
+          <div style="display:flex; gap:4px;">
+            <button class="retro-btn" onclick="clearPaintBoard()">🧹 ล้าง</button>
+            <button class="retro-btn" style="background: #ff85aa; color: #fff;" onclick="savePaintImage()">💾 SAVE PNG</button>
+          </div>
         </div>
       </div>
 
@@ -441,7 +511,7 @@
     <div class="window-body" style="padding: 6px;">
       <div id="video-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 2px inset var(--win-border-dark); background: #000;">
         <video id="custom-video-player" muted controls playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
-          <source src="Festival.mp4" type="video/mp4">
+          <source src="Picture/Festival.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div id="scanlines-layer" class="crt-scanlines"></div>
@@ -462,7 +532,7 @@
     <div class="window-body" style="text-align: center;">
       <div class="polaroid-frame">
         <div id="polaroid-box" class="polaroid-img-box">
-          <img id="gallery-img-tag" src="กินข้าวครั้งแรก.jpg" alt="Memory Photo" onerror="this.style.display='none'; document.getElementById('gallery-emoji-fallback').style.display='block';">
+          <img id="gallery-img-tag" src="Picture/กินข้าวครั้งแรก.jpg" alt="Memory Photo" onerror="this.style.display='none'; document.getElementById('gallery-emoji-fallback').style.display='block';">
           <video id="gallery-video-tag" controls playsinline loop style="width: 100%; height: 100%; object-fit: cover; display: none; background: #000;" onerror="this.style.display='none'; document.getElementById('gallery-emoji-fallback').style.display='block';"></video>
           <div id="gallery-emoji-fallback" style="font-size: 48px; display: none;">🌸🐱💕</div>
           <div id="photo-sticker" style="position: absolute; font-size: 28px; display: none; z-index: 5;"></div>
@@ -478,66 +548,114 @@
     </div>
   </div>
 
-  <!-- 4. ช่อดอกไม้ (Flower Bouquet) -->
-  <div class="window floating" id="win-cake" style="width: min(350px, 92vw);">
+  <!-- 4. ช่อดอกไม้ (Flower Bouquet Luxury Florist Edition) -->
+  <div class="window floating" id="win-cake" style="width: min(360px, 94vw);">
     <div class="window-header pink">
       <div>💐 Flower Bouquet - ช่อดอกไม้ให้แฟนน</div>
-      <div class="win-btn-control" onclick="closeWindow('win-cake')">✕</div>
+      <div class="win-btn-control" onclick="closeWindow('win-cake')" title="ปิดหน้าต่าง">✕</div>
     </div>
-    <div class="window-body" style="text-align: center;">
-      <p style="font-size: 11px; margin-bottom: 6px; color: #555;">แตะที่ดอกไม้ในช่อให้เบ่งบาน หรือเลือกจัดช่อดอกไม้ได้เลย 🌸</p>
+    <div class="window-body" style="text-align: center; padding: 10px 8px;">
+      <p style="font-size: 11px; margin-bottom: 6px; color: #555;">แตะที่ดอกไม้ให้ผลิบาน หรือเปลี่ยนจัดช่อดอกไม้สไตล์คาเฟ่ได้เลย 🌸</p>
 
+      <!-- โครงช่อดอกไม้ระดับพรีเมียม -->
       <div id="bouquet-stage" class="bouquet-stage theme-rose">
-        <!-- กระดาษห่อชั้นหลัง -->
-        <div class="bq-wrap-back"></div>
-        <div class="bq-wrap-inner"></div>
+        <!-- เงาใต้ช่อดอกไม้ -->
+        <div class="bq-ground-shadow"></div>
 
-        <!-- ใบไม้ประดับด้านหลัง -->
-        <div class="bq-leaf bq-leaf-l1">🌿</div>
-        <div class="bq-leaf bq-leaf-r1">🌿</div>
+        <!-- ใบไม้ประดับด้านหลัง (Eucalyptus, Ferns, Baby's breath) -->
+        <div class="bq-foliage-layer">
+          <span class="bq-foliage fol-1">🌿</span>
+          <span class="bq-foliage fol-2">🌱</span>
+          <span class="bq-foliage fol-3">🌾</span>
+          <span class="bq-foliage fol-4">🌱</span>
+          <span class="bq-foliage fol-5">🌿</span>
+        </div>
 
-        <!-- ดอกไม้ 5 ดอกในช่อ (แตะเพื่อเบ่งบานได้) -->
-        <div class="bouquet-flowers-group">
-          <div class="bq-flower f-pos-1 bloomed" onclick="bloomSingleFlower(this)">
-            <span class="bq-flower-icon">🌹</span>
-            <span class="bq-sparkle">✨</span>
-          </div>
-          <div class="bq-flower f-pos-2 bloomed" onclick="bloomSingleFlower(this)">
-            <span class="bq-flower-icon">🌸</span>
-            <span class="bq-sparkle">✨</span>
-          </div>
-          <div class="bq-flower f-pos-3 bloomed" onclick="bloomSingleFlower(this)">
-            <span class="bq-flower-icon">🌹</span>
+        <!-- กระดาษห่อชั้นหลัง (Matte Kraft / Scalloped Luxury Paper) -->
+        <div class="bq-wrap-back-luxury">
+          <div class="bq-wrap-back-wing-l"></div>
+          <div class="bq-wrap-back-wing-r"></div>
+        </div>
+
+        <!-- กระดาษไขโปร่งแสงชั้นกลาง (Frosted Glass Paper) -->
+        <div class="bq-wrap-frosted-mid"></div>
+
+        <!-- ช่อละอองดอกยิปโซสีขาววิ้งๆ -->
+        <div class="bq-gypso-spray">
+          <span class="gypso-dot gd-1">🤍</span>
+          <span class="gypso-dot gd-2">✨</span>
+          <span class="gypso-dot gd-3">🤍</span>
+          <span class="gypso-dot gd-4">✨</span>
+          <span class="gypso-dot gd-5">🤍</span>
+        </div>
+
+        <!-- กลุ่มดอกไม้ 9 ดอก จัดทรงพุ่มโค้งแน่น มีมิติ 3D -->
+        <div class="bouquet-flowers-group" id="bouquet-flowers-group">
+          <!-- ดอกกลางประธานช่อ -->
+          <div class="bq-flower f-pos-center bloomed" onclick="bloomSingleFlower(this)" title="แตะให้ดอกไม้บาน">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌹</span></div>
             <span class="bq-sparkle">💖</span>
           </div>
-          <div class="bq-flower f-pos-4 bloomed" onclick="bloomSingleFlower(this)">
-            <span class="bq-flower-icon">🌸</span>
+          <!-- ดอกชั้นกลาง ซ้าย-ขวา -->
+          <div class="bq-flower f-pos-mid-l bloomed" onclick="bloomSingleFlower(this)">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌸</span></div>
             <span class="bq-sparkle">✨</span>
           </div>
-          <div class="bq-flower f-pos-5 bloomed" onclick="bloomSingleFlower(this)">
-            <span class="bq-flower-icon">🌹</span>
+          <div class="bq-flower f-pos-mid-r bloomed" onclick="bloomSingleFlower(this)">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌹</span></div>
+            <span class="bq-sparkle">✨</span>
+          </div>
+          <!-- ดอกชั้นบน ยอดพุ่ม 3 ดอก -->
+          <div class="bq-flower f-pos-top-l bloomed" onclick="bloomSingleFlower(this)">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌸</span></div>
+            <span class="bq-sparkle">✨</span>
+          </div>
+          <div class="bq-flower f-pos-top-c bloomed" onclick="bloomSingleFlower(this)">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌹</span></div>
+            <span class="bq-sparkle">💖</span>
+          </div>
+          <div class="bq-flower f-pos-top-r bloomed" onclick="bloomSingleFlower(this)">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌸</span></div>
+            <span class="bq-sparkle">✨</span>
+          </div>
+          <!-- ดอกชั้นล่างข้างโบว์ 2 ดอก -->
+          <div class="bq-flower f-pos-low-l bloomed" onclick="bloomSingleFlower(this)">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌹</span></div>
+            <span class="bq-sparkle">✨</span>
+          </div>
+          <div class="bq-flower f-pos-low-r bloomed" onclick="bloomSingleFlower(this)">
+            <div class="bloom-wrapper"><span class="bq-flower-icon">🌸</span></div>
             <span class="bq-sparkle">✨</span>
           </div>
         </div>
 
-        <!-- กระดาษห่อช่อด้านหน้า (ทรงกรวยช่อดอกไม้) -->
-        <div class="bq-wrap-front">
-          <div class="bq-wrap-fold-left"></div>
-          <div class="bq-wrap-fold-right"></div>
+        <!-- กระดาษห่อกรวยชั้นหน้า (Luxury Pleated Cone Wrap) -->
+        <div class="bq-wrap-front-luxury">
+          <div class="bq-cone-flap-l"></div>
+          <div class="bq-cone-flap-r"></div>
+          <div class="bq-cone-center-rib"></div>
         </div>
 
-        <!-- โบว์ริบบิ้น + ป้ายการ์ดห้อย -->
-        <div class="bq-ribbon-box" onclick="changeBouquetCard()" title="คลิกเพื่อเปลี่ยนข้อความการ์ด">
-          <div class="bq-ribbon-bow">🎀</div>
-          <div id="bouquet-card-tag" class="bq-card-tag">ให้คนน่ารักที่สุด 💖</div>
+        <!-- โบว์ริบบิ้นผ้าซาตินหรูหรา + ป้ายการ์ดข้อความ -->
+        <div class="bq-ribbon-unit">
+          <div class="bq-ribbon-satin-bow" onclick="openCardWriter()" title="คลิกเพื่อเขียนการ์ด">
+            <span class="bow-center-icon">🎀</span>
+            <div class="bow-streamer-l"></div>
+            <div class="bow-streamer-r"></div>
+          </div>
+          <div id="bouquet-card-tag" class="bq-luxury-card-tag" onclick="openCardWriter()" title="คลิกเพื่อแก้ไขการ์ด">
+            <span class="card-pin">📌</span>
+            <span id="bouquet-card-text">ให้คนน่ารักที่สุด 💖</span>
+            <span class="card-edit-badge">✎</span>
+          </div>
         </div>
       </div>
 
-      <div id="bouquet-status" style="font-size: 12px; font-weight: bold; color: #ff1493; margin: 6px 0 8px;">💐 ช่อกุหลาบชมพูหวาน มอบให้เธอคนเดียวนะ!</div>
+      <div id="bouquet-status" style="font-size: 12px; font-weight: bold; color: #ff1493; margin: 6px 0 8px;">💐 ช่อกุหลาบเจ้าหญิงสีชมพู มอบให้เธอคนเดียวนะ!</div>
 
       <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
         <button class="retro-btn" onclick="changeBouquetStyle()">🌷 เปลี่ยนช่อดอกไม้</button>
-        <button class="retro-btn" onclick="changeBouquetCard()">💌 เปลี่ยนการ์ด</button>
+        <button class="retro-btn" onclick="openCardWriter()">💌 เขียนการ์ดใหม่</button>
         <button class="retro-btn" style="background: #ffaec9; font-weight: bold;" onclick="bloomAllFlowers()">✨ โปรยดอกไม้!</button>
       </div>
     </div>
@@ -546,7 +664,7 @@
   <!-- 5. เกมตู้คีบตุ๊กตา -->
   <div class="window floating" id="win-fortune" style="width: min(360px, 95vw);">
     <div class="window-header pink">
-      <div>เกมตู้คีบตุ๊กตา คีบได้ 2 ครั้งน๊าา</div>
+      <div>🕹️ เกมตู้คีบตุ๊กตา - Gashapon & Claw</div>
       <div class="win-btn-control" onclick="closeWindow('win-fortune')">✕</div>
     </div>
     <div class="window-body" style="text-align: center; padding: 8px;">
@@ -558,11 +676,11 @@
       </div>
       <!-- ปุ่มควบคุม -->
       <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
-        <button class="retro-btn" id="clawBtnLeft"  onpointerdown="clawStartMove(-1)" onpointerup="clawStopMove()" onpointerleave="clawStopMove()">ซ้าย</button>
-        <button class="retro-btn" id="clawBtnGrab"  onclick="clawGrab()" style="background:#ffaec9; font-weight:bold;">GRAB</button>
-        <button class="retro-btn" id="clawBtnRight" onpointerdown="clawStartMove(1)"  onpointerup="clawStopMove()" onpointerleave="clawStopMove()">ขวา</button>
+        <button class="retro-btn" id="clawBtnLeft"  onpointerdown="clawStartMove(-1)" onpointerup="clawStopMove()" onpointerleave="clawStopMove()">◀ ซ้าย</button>
+        <button class="retro-btn" id="clawBtnGrab"  onclick="clawGrab()" style="background:#ffaec9; font-weight:bold;">✨ GRAB</button>
+        <button class="retro-btn" id="clawBtnRight" onpointerdown="clawStartMove(1)"  onpointerup="clawStopMove()" onpointerleave="clawStopMove()">ขวา ▶</button>
       </div>
-      <div style="margin-top:6px; font-size:10px; color:#994c68;">ลองสักกี่ครั้งก็ได้!</div>
+      <div style="margin-top:6px; font-size:10px; color:#994c68;">คีบได้กี่ครั้งก็ได้เลยน๊าา! 🎁</div>
     </div>
   </div>
 
@@ -588,17 +706,216 @@
     </div>
   </div>
 
+  <!-- ================= RETRO MODAL POPUPS ================= -->
+
+  <!-- A. Retro Print Love Certificate Dialog -->
+  <div class="retro-modal-overlay" id="print-cert-dialog" style="display: none;">
+    <div class="window" style="width: min(340px, 92vw);">
+      <div class="window-header">
+        <span>🖨️ Print - ใบรับรองแฟนดีเด่นประจำปี</span>
+        <div class="win-btn-control" onclick="closePrintLoveDialog()">✕</div>
+      </div>
+      <div class="window-body" style="padding: 10px; font-size: 11px;">
+        <div style="border: 2px inset #808080; background: #fff; padding: 8px; margin-bottom: 10px;">
+          <div style="font-weight: bold; color: #ff1493; margin-bottom: 4px;">📜 CERTIFICATE OF ETERNAL LOVE</div>
+          <div style="font-size: 10px; line-height: 1.6; color: #333;">
+            ผู้รับ: หนู (แฟนที่น่ารักที่สุดในโลก) 💕<br>
+            ผู้มอบ: พี่ (คนที่รักหนูที่สุด) 💖<br>
+            สถานะ: ผ่านการรับรองความน่ารัก 100%<br>
+            Printer: LoveJet Color 2026<br>
+            จำนวนสำเนา (Copies): 3,000 ชุด
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 6px;">
+          <button class="retro-btn" style="background: #ffaec9; font-weight: bold;" onclick="confirmPrintLove()">🖨️ พิมพ์เอกสาร (Print)</button>
+          <button class="retro-btn" onclick="closePrintLoveDialog()">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. Retro Bouquet Card Writer Modal -->
+  <div class="retro-modal-overlay" id="card-writer-modal" style="display: none;">
+    <div class="window" style="width: min(340px, 92vw);">
+      <div class="window-header pink">
+        <span>💌 เขียนข้อความใส่การ์ดช่อดอกไม้</span>
+        <div class="win-btn-control" onclick="closeCardWriter()">✕</div>
+      </div>
+      <div class="window-body" style="padding: 10px; font-size: 11px;">
+        <div style="font-weight: bold; margin-bottom: 4px; color: #4a152d;">พิมพ์ข้อความที่ต้องการใส่การ์ด:</div>
+        <input type="text" id="custom-card-input" placeholder="พิมพ์ข้อความรัก..." maxlength="30" style="width: 100%; box-sizing: border-box; border: 2px inset #808080; padding: 4px 6px; font-size: 11px; margin-bottom: 8px;">
+        <div style="font-size: 10px; color: #777; margin-bottom: 6px;">หรือเลือกจากข้อความหวานๆ:</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px;">
+          <button class="retro-btn" onclick="selectPresetCard('ให้คนน่ารักที่สุด 💖')">ให้คนน่ารักที่สุด 💖</button>
+          <button class="retro-btn" onclick="selectPresetCard('รักแฟนม๊ากกก ✨')">รักแฟนม๊ากกก ✨</button>
+          <button class="retro-btn" onclick="selectPresetCard('อยู่ด้วยกันไปนานๆ นะ 🥰')">อยู่ด้วยกันไปนานๆ นะ 🥰</button>
+          <button class="retro-btn" onclick="selectPresetCard('ขอบคุณที่เป็นรอยยิ้มให้กัน 🌷')">ขอบคุณที่เป็นรอยยิ้ม 🌷</button>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 6px;">
+          <button class="retro-btn" style="background: #ffaec9; font-weight: bold;" onclick="saveCustomCard()">💾 บันทึกใส่การ์ด</button>
+          <button class="retro-btn" onclick="closeCardWriter()">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C. Retro Artist Note Modal -->
+  <div class="retro-modal-overlay" id="artist-modal" style="display: none;">
+    <div class="window" style="width: min(320px, 90vw);">
+      <div class="window-header">
+        <span>🎵 ศิลปินในดวงใจ - Love u Pimpisut</span>
+        <div class="win-btn-control" onclick="closeArtistModal()">✕</div>
+      </div>
+      <div class="window-body" style="padding: 10px; font-size: 11px; line-height: 1.6; text-align: center;">
+        <div style="font-size: 32px; margin-bottom: 4px;">🤌🏻💖</div>
+        <div style="font-weight: bold; color: #ff1493; font-size: 13px;">Love u Pimpisut</div>
+        <div style="margin: 6px 0; color: #333;">
+          ศิลปินคนโปรดที่น่ารักที่สุดในโลกของพี่<br>ทุกเพลงในเครื่องเล่นนี้เปิดขึ้นเพื่อเธอคนเดียวนะคะ 🎧
+        </div>
+        <button class="retro-btn" style="margin-top: 6px; background: #ffaec9;" onclick="closeArtistModal()">รับทราบและรักเสมอ 💕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- D. Retro Paint Save Prompt Modal -->
+  <div class="retro-modal-overlay" id="paint-prompt-modal" style="display: none;">
+    <div class="window" style="width: min(300px, 88vw);">
+      <div class="window-header">
+        <span>🎨 Paint - บันทึกภาพวาด?</span>
+        <div class="win-btn-control" onclick="closePaintPromptModal()">✕</div>
+      </div>
+      <div class="window-body" style="padding: 12px; font-size: 11px;">
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 26px;">❓</span>
+          <div>ต้องการบันทึกภาพวาด <b>วาดๆได้เลยน๊าา.PNG</b> หรือไม่?</div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 4px;">
+          <button class="retro-btn" style="background:#ffaec9; font-weight:bold;" onclick="savePaintAndClose()">บันทึก</button>
+          <button class="retro-btn" onclick="dismissPaintWithoutSave()">ไม่บันทึก</button>
+          <button class="retro-btn" onclick="closePaintPromptModal()">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E. Retro Windows Calendar / Clock Dialog -->
+  <div class="retro-modal-overlay" id="calendar-popup" style="display: none;">
+    <div class="window" style="width: min(320px, 90vw);">
+      <div class="window-header">
+        <span>📅 Date/Time Properties & Anniversary</span>
+        <div class="win-btn-control" onclick="toggleCalendarDialog()">✕</div>
+      </div>
+      <div class="window-body" style="padding: 10px; font-size: 11px;">
+        <div style="text-align: center; border: 2px inset #808080; background: #fff; padding: 8px; margin-bottom: 8px;">
+          <div id="cal-live-clock" style="font-family: 'MS Gothic', monospace; font-size: 18px; font-weight: bold; color: #ff1493;">12:00:00 PM</div>
+          <div id="cal-live-date" style="font-size: 10px; color: #666; margin-top: 2px;">วันอังคารที่ 20 ตุลาคม 2026</div>
+          <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #ccc; font-weight: bold; color: #4a152d;">
+            💖 ครบรอบ 1 ปี 1 เดือน (1Y 1M) แห่งความสุข
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <button class="retro-btn" onclick="toggleCalendarDialog()">ตกลง (OK)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- F. Retro Windows 98 Start Menu Popup -->
+  <div class="retro-start-menu" id="start-menu-popup" style="display: none;">
+    <div class="start-menu-sidebar">
+      <span class="start-menu-brand">Windows<b>98</b> Anniversary</span>
+    </div>
+    <div class="start-menu-items">
+      <div class="start-item" onclick="openWindow('win-letter'); closeStartMenu();">
+        <span class="start-icon">📝</span>
+        <div class="start-text"><b>ข้อความถึงหนู</b> (Letter.txt)</div>
+      </div>
+      <div class="start-item" onclick="openWindow('win-youtube'); closeStartMenu();">
+        <span class="start-icon">🎬</span>
+        <div class="start-text"><b>วิดีโอของเรา</b> (video.mp4)</div>
+      </div>
+      <div class="start-item" onclick="openWindow('win-gallery'); closeStartMenu();">
+        <span class="start-icon">🖼️</span>
+        <div class="start-text"><b>แกลเลอรีรูปถ่าย</b> (Photo Viewer)</div>
+      </div>
+      <div class="start-item" onclick="openWindow('win-cake'); closeStartMenu();">
+        <span class="start-icon">💐</span>
+        <div class="start-text"><b>ช่อดอกไม้ให้แฟน</b> (Bouquet)</div>
+      </div>
+      <div class="start-item" onclick="openWindow('win-fortune'); closeStartMenu();">
+        <span class="start-icon">🕹️</span>
+        <div class="start-text"><b>ตู้คีบตุ๊กตา</b> (Game.exe)</div>
+      </div>
+      <div class="start-item" onclick="openWindow('win-trash'); closeStartMenu();">
+        <span class="start-icon">🗑️</span>
+        <div class="start-text"><b>Recycle Bin</b> (บดทิ้งเรื่องแย่ๆ)</div>
+      </div>
+      <div class="start-divider"></div>
+      <div class="start-item" onclick="restoreWidget('cd-player-widget'); closeStartMenu();">
+        <span class="start-icon">💿</span>
+        <div class="start-text">CD Player</div>
+      </div>
+      <div class="start-item" onclick="restoreWidget('help-topics-widget'); closeStartMenu();">
+        <span class="start-icon">🧩</span>
+        <div class="start-text">Help Topics (จิ๊กซอว์)</div>
+      </div>
+      <div class="start-item" onclick="restoreWidget('paint-main-window'); closeStartMenu();">
+        <span class="start-icon">🎨</span>
+        <div class="start-text">Paint โปรแกรมวาดรูป</div>
+      </div>
+      <div class="start-divider"></div>
+      <div class="start-item" onclick="triggerCuteVirus(); closeStartMenu();">
+        <span class="start-icon">🌸</span>
+        <div class="start-text"><b>Start ไวรัสอวยพร</b></div>
+      </div>
+      <div class="start-item" onclick="openShutDownDialog(); closeStartMenu();">
+        <span class="start-icon">🔒</span>
+        <div class="start-text">Shut Down...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- G. Retro Shut Down Simulation Dialog -->
+  <div class="retro-modal-overlay" id="shutdown-dialog" style="display: none;">
+    <div class="window" style="width: min(320px, 90vw);">
+      <div class="window-header">
+        <span>🔒 Shut Down Windows</span>
+        <div class="win-btn-control" onclick="closeShutDownDialog()">✕</div>
+      </div>
+      <div class="window-body" style="padding: 10px; font-size: 11px;">
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 30px;">💻</span>
+          <div><b>คุณต้องการทำอะไรกับคอมพิวเตอร์เครื่องนี้?</b></div>
+        </div>
+        <div style="border: 2px inset #808080; background: #fff; padding: 6px 10px; margin-bottom: 10px; font-size: 10.5px; line-height: 1.8;">
+          <label style="display: block; cursor: pointer;"><input type="radio" name="shutdown_opt" value="love" checked> รักและอยู่ด้วยกันตลอดไป (Recommended) 💕</label>
+          <label style="display: block; cursor: pointer;"><input type="radio" name="shutdown_opt" value="kiss"> กอดและหอมแก้ม 1 ที 💋</label>
+          <label style="display: block; cursor: pointer;"><input type="radio" name="shutdown_opt" value="restart"> Restart หัวใจให้เต้นรัวๆ ✨</label>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 6px;">
+          <button class="retro-btn" style="background:#ffaec9; font-weight:bold;" onclick="confirmShutDown()">ตกลง (OK)</button>
+          <button class="retro-btn" onclick="closeShutDownDialog()">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Taskbar -->
   <div class="taskbar">
-    <button class="retro-btn start-btn" onclick="triggerCuteVirus()">
+    <button class="retro-btn start-btn" id="start-btn" onclick="toggleStartMenu(event)">
       <span style="font-size: 14px;">🌸</span> Start อวยพรร
     </button>
-    <div class="taskbar-clock" id="clock">12:00 PM</div>
+    <div class="taskbar-active-tabs" id="taskbar-active-tabs">
+      <div class="taskbar-tab active" onclick="bringToFront(document.getElementById('cd-player-widget'))">💿 CD Player</div>
+      <div class="taskbar-tab active" onclick="bringToFront(document.getElementById('help-topics-widget'))">🧩 Help Topics</div>
+      <div class="taskbar-tab active" onclick="bringToFront(document.getElementById('paint-main-window'))">🎨 Paint.png</div>
+    </div>
+    <div class="taskbar-clock" id="clock" onclick="toggleCalendarDialog()" title="คลิกเพื่อดูปฏิทิน">12:00 PM</div>
   </div>
 
   <!-- Audio Element -->
   <audio id="bgm" loop>
-    <source src="Cocktail.mp3" type="audio/mpeg">
+    <source src="Music/Cocktail.mp3" type="audio/mpeg">
   </audio>
 
   <script src="script.js"></script>
