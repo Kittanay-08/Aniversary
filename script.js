@@ -1697,20 +1697,62 @@ let clawCtx = null;
 const DOLL_COLORS  = ['#ffb3c6','#ffd6a0','#c5b3ff','#b3f0c6','#ffe0a0'];
 const DOLL_LABELS  = ['A','B','C','D','E'];
 
-function clawInit() {
+// ฟังก์ชันสุ่มเรียงลำดับ (Fisher-Yates Shuffle)
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// สุ่มตำแหน่ง X ของไข่ 5 ใบแบบไม่ทับซ้อนและมีระยะห่างที่พอดี
+function generateRandomDollPositions(count = 5) {
+  const minX = 70;
+  const maxX = 270;
+  const slotW = (maxX - minX) / count; // ~40px ต่อช่อง
+  const positions = [];
+
+  for (let i = 0; i < count; i++) {
+    const baseCenter = minX + (i + 0.5) * slotW;
+    const jitter = (Math.random() - 0.5) * (slotW * 0.45); // สุ่มเบี่ยงเบนเล็กน้อย ~±9px
+    positions.push(Math.round(baseCenter + jitter));
+  }
+  return positions;
+}
+
+// สร้างไข่ตุ๊กตาชุดใหม่แบบสลับตำแหน่ง สี ป้าย และของรางวัล
+function createShuffledDolls() {
+  const randPositions = generateRandomDollPositions(5);
+  const shuffledColors = shuffleArray(DOLL_COLORS);
+  const shuffledLabels = shuffleArray(DOLL_LABELS);
+  const shuffledPrizes = shuffleArray(gashaCoupons);
+
+  clawDolls = randPositions.map((posX, i) => ({
+    x: posX,
+    y: FLOOR_Y - 17,
+    r: 13,
+    color: shuffledColors[i],
+    label: shuffledLabels[i],
+    prize: shuffledPrizes[i],
+    taken: false
+  }));
+}
+
+// สุ่มตำแหน่งไข่ทุกครั้งที่โหลดเข้าหน้าเว็บ
+createShuffledDolls();
+
+function clawInit(forceReset = false) {
   const canvas = document.getElementById('clawCanvas');
   if (!canvas) return;
   clawCtx = canvas.getContext('2d');
 
-  // สร้างตุ๊กตา 5 ตัว เรียงบนพื้น — cy = FLOOR_Y - rh ให้ขอบล่างแตะพื้นพอดี
-  // rh = r * 1.3 = 13 * 1.3 = 16.9 ≈ 17
-  clawDolls = [
-    { x:55,  y:FLOOR_Y-17, r:13, color:'#ffb3c6', label:'A', taken:false },
-    { x:100, y:FLOOR_Y-17, r:13, color:'#ffd6a0', label:'B', taken:false },
-    { x:150, y:FLOOR_Y-17, r:13, color:'#c5b3ff', label:'C', taken:false },
-    { x:200, y:FLOOR_Y-17, r:13, color:'#b3f0c6', label:'D', taken:false },
-    { x:245, y:FLOOR_Y-17, r:13, color:'#ffe0a0', label:'E', taken:false },
-  ];
+  // สุ่มใหม่ถ้ายังไม่มี หรือสั่ง forceReset หรือคีบไปหมดตู้แล้ว
+  if (!clawDolls.length || forceReset || clawDolls.every(d => d.taken)) {
+    createShuffledDolls();
+  }
+
   clawX = 150;
   clawDropY = 14;
   clawOpen = true;
@@ -1719,6 +1761,15 @@ function clawInit() {
 
   if (clawAnimId) cancelAnimationFrame(clawAnimId);
   clawLoop();
+}
+
+function shuffleClawDolls() {
+  if (clawState !== 'idle') return;
+  playClickSound();
+  createShuffledDolls();
+  const display = document.getElementById('fortune-display');
+  if (display) display.innerHTML = '🎲 สลับตำแหน่งไข่เรียบร้อยแล้ว!';
+  triggerConfetti();
 }
 
 function clawLoop() {
@@ -1994,14 +2045,9 @@ function finishGrab(success, prizeIdx) {
   document.getElementById('clawBtnGrab').disabled  = false;
 
   if (success && prizeIdx !== undefined) {
-    const prizes = [
-      "คูปองตามใจ 1 วัน ",
-      "คูปองฟรีชานมไข่มุก 1 แก้วเต็มๆ",
-      "คูปองชาบูฟรี 1 มื้อ",
-      "คูปองพาไปกินของอร่อยมื้อใหญ่ 1 มื้อ",
-      "คูปองเลือกสิ่งที่อยากได้ 1 อย่าง",
-    ];
-    const msg = prizes[prizeIdx % prizes.length];
+    const msg = (clawDolls[prizeIdx] && clawDolls[prizeIdx].prize)
+      ? clawDolls[prizeIdx].prize
+      : gashaCoupons[prizeIdx % gashaCoupons.length];
     document.getElementById('fortune-display').innerHTML =
       `<b style="color:#ff1493;">ได้รับ: ${msg}</b>`;
 
@@ -2028,11 +2074,15 @@ function finishGrab(success, prizeIdx) {
     makeDraggable(pop);
     triggerConfetti();
 
-    // รีเซ็ตถ้าหมดทุกตัว
+    // รีเซ็ตถ้าหมดทุกตัว -> สลับตำแหน่งและของรางวัลใหม่
     if (clawDolls.every(d => d.taken)) {
       setTimeout(() => {
-        document.getElementById('fortune-display').innerHTML = 'คีบหมดแล้ว! รีเซ็ตเกมใหม่';
-        clawInit();
+        document.getElementById('fortune-display').innerHTML = '🎁 คีบหมดแล้ว! กำลังสลับตำแหน่งใหม่...';
+        setTimeout(() => {
+          clawInit(true);
+          document.getElementById('fortune-display').innerHTML = '✨ สลับไข่ชุดใหม่เรียบร้อยแล้ว! ลุยต่อเลยย 💕';
+          triggerConfetti();
+        }, 1000);
       }, 2000);
     }
   } else {
