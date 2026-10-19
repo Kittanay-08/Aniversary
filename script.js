@@ -1154,11 +1154,20 @@ function renderGalleryMedia(item) {
     if (imgTag) imgTag.style.display = 'none';
     if (vidTag) {
       vidTag.style.display = 'block';
-      if (vidTag.getAttribute('src') !== item.src) {
-        vidTag.src = item.src;
+      const cleanSrc = encodeURI(decodeURI(item.src));
+      if (vidTag.getAttribute('src') !== cleanSrc && vidTag.getAttribute('src') !== item.src) {
+        vidTag.src = cleanSrc;
       }
       vidTag.currentTime = 0;
       vidTag.play().catch(() => {});
+      vidTag.onerror = () => {
+        if (vidTag.getAttribute('src') !== item.src) {
+          vidTag.src = item.src;
+        } else {
+          vidTag.style.display = 'none';
+          if (fallback) fallback.style.display = 'block';
+        }
+      };
     }
   } else {
     if (vidTag) {
